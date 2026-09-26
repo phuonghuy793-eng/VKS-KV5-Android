@@ -550,18 +550,20 @@ function openLaw(src){
 let landMap,landPoly,landBaseNormal,landBaseSatellite,landBaseMode="normal";
 function showLand(){hidePages();$("land").classList.remove("hidden");if(!$("landRows").children.length)renderLandRows();renderSavedLands();setTimeout(initLandMap,150)}
 
+function syncLandBaseByZoom(){
+ if(!landMap)return;
+ if(!landMap.hasLayer(landBaseNormal))landBaseNormal.addTo(landMap);
+ if(landBaseMode==="satellite" && landMap.getZoom()<=18){
+   if(!landMap.hasLayer(landBaseSatellite))landBaseSatellite.addTo(landMap);
+ }else{
+   if(landMap.hasLayer(landBaseSatellite))landMap.removeLayer(landBaseSatellite);
+ }
+}
 function setLandBase(mode){
  if(!landMap){initLandMap()}
  if(!landMap)return;
- if(mode==="satellite"){
-  // Keep OSM underneath as a fallback where Esri has no high-level imagery tile.
-  if(!landMap.hasLayer(landBaseNormal))landBaseNormal.addTo(landMap);
-  if(!landMap.hasLayer(landBaseSatellite))landBaseSatellite.addTo(landMap);
- }else{
-  if(landMap.hasLayer(landBaseSatellite))landMap.removeLayer(landBaseSatellite);
-  if(!landMap.hasLayer(landBaseNormal))landBaseNormal.addTo(landMap);
- }
  landBaseMode=mode;
+ syncLandBaseByZoom();
  $("mapNormalBtn").classList.toggle("active",mode==="normal");
  $("mapSatelliteBtn").classList.toggle("active",mode==="satellite");
 }
@@ -574,7 +576,7 @@ function removeLandPoint(){if(landPointCount<=3)return;let v=readLandRaw();landP
 function readLandRaw(){let a=[];for(let i=0;i<landPointCount;i++)a.push([$("c1_"+i).value,$("c2_"+i).value]);return a}
 function vnToGps(X,Y){let lon0=parseFloat($("centralMeridian").value);let src=`+proj=tmerc +lat_0=0 +lon_0=${lon0} +k=0.9999 +x_0=500000 +y_0=0 +ellps=WGS84 +units=m +no_defs`;let z=proj4(src,"EPSG:4326",[Y,X]);return [z[1],z[0]]}
 function landMeasure(P){let R=6371008.8,lat0=P.reduce((a,p)=>a+p[0],0)/P.length*Math.PI/180,xy=P.map(p=>[R*p[1]*Math.PI/180*Math.cos(lat0),R*p[0]*Math.PI/180]);let area=0,per=0;for(let i=0;i<xy.length;i++){let a=xy[i],b=xy[(i+1)%xy.length];area+=a[0]*b[1]-b[0]*a[1];per+=Math.hypot(a[0]-b[0],a[1]-b[1])}return [Math.abs(area)/2,per]}
-function initLandMap(){if(!landMap){landMap=L.map("landMap",{maxZoom:28,zoomSnap:.25,zoomDelta:1,preferCanvas:true}).setView([10.45,105.63],9);landBaseNormal=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxNativeZoom:19,maxZoom:28,keepBuffer:4,updateWhenIdle:true,attribution:"© OpenStreetMap"});landBaseSatellite=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxNativeZoom:18,maxZoom:28,keepBuffer:4,updateWhenIdle:true,attribution:"Tiles © Esri"});landBaseNormal.addTo(landMap)}setTimeout(()=>landMap.invalidateSize(),50)}
+function initLandMap(){if(!landMap){landMap=L.map("landMap",{maxZoom:28,zoomSnap:.25,zoomDelta:1,preferCanvas:true}).setView([10.45,105.63],9);landBaseNormal=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxNativeZoom:19,maxZoom:28,keepBuffer:4,updateWhenIdle:true,attribution:"© OpenStreetMap"});landBaseSatellite=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxNativeZoom:18,maxZoom:18,keepBuffer:4,updateWhenIdle:true,attribution:"Tiles © Esri"});landBaseNormal.addTo(landMap);landMap.on("zoomend",syncLandBaseByZoom)}setTimeout(()=>{landMap.invalidateSize();syncLandBaseByZoom()},50)}
 function clearLandDrawing(){if(landMap&&landPoly){landMap.removeLayer(landPoly);landPoly=null}if($("landStats"))$("landStats").style.display="none"}
 function drawLand(){let raw=readLandRaw(),P=[];for(let r of raw){let a=parseFloat(String(r[0]).trim().replace(",",".")),b=parseFloat(String(r[1]).trim().replace(",","."));if(!isFinite(a)||!isFinite(b)){alert("Vui lòng nhập đủ tọa độ các mốc.");return}P.push(coordMode==="vn2000"?vnToGps(a,b):[a,b])}initLandMap();if(landPoly)landMap.removeLayer(landPoly);landPoly=L.polygon(P,{weight:3,fillOpacity:.22}).addTo(landMap);
 setTimeout(()=>{
@@ -1203,7 +1205,29 @@ function casePrompt(text){if(caseType==='civil')return `Bạn là công cụ tr�
 return `Bạn là công cụ trích xuất dữ kiện từ hồ sơ vụ án hình sự Việt Nam. Chỉ dùng dữ liệu có trong văn bản nguồn. Không bịa. Chỉ lấy nội dung quan trọng.\n\nTạo "case_title" theo mẫu: "Vụ án [tội danh] - Bị can [họ tên]". Nếu hồ sơ dùng "Bị cáo" thì dùng "Bị cáo".\n\nTrả JSON đúng cấu trúc: {"case_title":"...","nodes":[{"title":"Bị can / Bị cáo","content":"..."},{"title":"Hành vi / diễn biến chính","content":"..."},{"title":"Chứng cứ chính","content":"..."},{"title":"Đề xuất xử lý","content":"..."}]}\n\nVĂN BẢN NGUỒN:\n---BEGIN---\n${text}\n---END---`}
 async function caseAskModel(key,model,prompt){let r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{temperature:0,responseMimeType:'application/json'}})}),raw=await r.text();if(!r.ok){let e=new Error(raw.slice(0,250));e.status=r.status;throw e}let j=JSON.parse(raw),out=j?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';return JSON.parse(out.replace(/^```json\s*/i,'').replace(/```$/,'').trim())}
 async function caseAnalyze(){let key=$('caseApiKey').value.trim(),src=$('caseSource').value.trim();if(!key)return caseStatus('Chưa dán API key.','err');if(!src)return caseStatus('Chưa có nội dung hồ sơ.','err');caseStatus('AI đang đọc hồ sơ...','busy');try{if(!caseModelList.length)caseModelList=caseOrderModels(await caseListModels(key));let last=null,data=null,used='';for(let i=0;i<caseModelList.length;i++){let m=caseModelList[i];caseStatus(`Đang thử model ${i+1}/${caseModelList.length}: ${m}`,'busy');try{data=await caseAskModel(key,m,casePrompt(src));used=m;break}catch(e){last=e;if(![429,500,502,503,504].includes(e.status))throw e}}if(!data)throw last||new Error('Không có model khả dụng.');$('caseTitle').value=String(data.case_title||(caseType==='civil'?'Vụ án dân sự':'Vụ án hình sự')).trim();let arr=Array.isArray(data.nodes)?data.nodes:[];caseNodes=CASE_DEFAULTS[caseType].map((d,i)=>({title:String(arr[i]?.title||d.title),content:String(arr[i]?.content||'').trim()}));caseRender();caseStatus('Đã tạo sơ đồ bằng '+used+'. Hãy kiểm tra lại nội dung trước khi sử dụng.','ok')}catch(e){caseStatus('Phân tích thất bại: '+e.message,'err')}}
-async function caseExportPdf(){if(!window.html2pdf)return caseStatus('Chưa tải được thư viện xuất PDF. Kiểm tra Internet rồi thử lại.','err');caseStatus('Đang tạo PDF...','busy');let holder=null;try{let card=$('caseFlow').parentElement.cloneNode(true);card.querySelectorAll('.caseflow-bottom,.caseflow-tools,.caseflow-note').forEach(x=>x.remove());let original=$('caseFlow').parentElement,srcFields=[...original.querySelectorAll('input,textarea')],cloneFields=[...card.querySelectorAll('input,textarea')];cloneFields.forEach((el,i)=>{let d=document.createElement('div');d.className='caseflow-pdftext';d.textContent=(srcFields[i]?.value||'').trim();if(el.classList.contains('caseflow-title'))d.classList.add('caseflow-pdftitle');else if(el.classList.contains('caseflow-node-title')){d.style.fontSize='15px';d.style.fontWeight='900';d.style.color='#173a5e'}else if(el.classList.contains('caseflow-content'))d.style.fontSize='12.5px';el.replaceWith(d)});holder=document.createElement('div');holder.className='caseflow-pdf-wrap';holder.appendChild(card);document.body.appendChild(holder);await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));let filename=caseEscFile($('caseTitle').value),opt={margin:[8,8,8,8],filename,image:{type:'jpeg',quality:.97},html2canvas:{scale:2,useCORS:true,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy'],avoid:['.caseflow-node','.caseflow-titlebox']}};if(document.fonts&&document.fonts.ready)await document.fonts.ready;let worker=html2pdf().set(opt).from(holder);if(window.AndroidFile&&AndroidFile.savePdfBase64){await worker.toPdf();let dataUri=await worker.outputPdf('datauristring');if(!dataUri||dataUri.length<1000)throw new Error('PDF tạo ra không có nội dung.');AndroidFile.savePdfBase64(dataUri,filename);caseStatus('Đã tạo PDF và lưu vào thư mục Tải xuống/VKS_KV5.','ok')}else{await worker.save();caseStatus('Đã xuất PDF.','ok')}}catch(e){caseStatus('Xuất PDF lỗi: '+e.message,'err')}finally{if(holder)holder.remove()}}
+function caseHtmlEsc(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
+function caseBuildPrintHtml(){
+ let title=caseHtmlEsc($('caseTitle').value||'Sơ đồ vụ án');
+ let blocks=caseNodes.map((n,i)=>`<section class="node"><div class="head"><span class="ico">${CASE_ICONS[Math.min(i,CASE_ICONS.length-1)]}</span><b>${caseHtmlEsc(n.title)}</b></div><div class="body">${caseHtmlEsc(n.content).replace(/\n/g,'<br>')}</div></section>${i<caseNodes.length-1?'<div class="arrow">↓</div>':''}`).join('');
+ return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4;margin:10mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#173a5e;margin:0;background:#fff}.title{border:2px solid #9cccf4;border-radius:14px;padding:12px 14px;text-align:center;font-size:20px;font-weight:700;line-height:1.35;margin-bottom:12px}.title small{display:block;font-size:11px;color:#637b93;margin-bottom:6px}.node{border:1.5px solid #b7d7ef;border-radius:12px;overflow:hidden;break-inside:avoid;page-break-inside:avoid}.head{background:#e7f3fc;padding:10px 12px;font-size:16px}.ico{margin-right:8px}.body{padding:10px 12px;font-size:13px;line-height:1.5;white-space:normal;overflow-wrap:anywhere}.arrow{text-align:center;color:#2f80ed;font-size:26px;line-height:32px;height:32px;break-inside:avoid}</style></head><body><div class="title"><small>TÊN VỤ ÁN</small>${title}</div>${blocks}</body></html>`;
+}
+function caseExportPdf(){
+ caseStatus('Đang mở chức năng lưu PDF của Android...','busy');
+ try{
+   let filename=caseEscFile($('caseTitle').value);
+   let html=caseBuildPrintHtml();
+   if(window.AndroidFile&&AndroidFile.printHtmlToPdf){
+     AndroidFile.printHtmlToPdf(html,filename);
+     caseStatus('Đã chuyển nội dung sang bộ xuất PDF của Android. Chọn “Lưu dưới dạng PDF”.','ok');
+   }else{
+     let w=window.open('','_blank');
+     if(!w)throw new Error('Không mở được cửa sổ in.');
+     w.document.open();w.document.write(html);w.document.close();
+     setTimeout(()=>w.print(),500);
+     caseStatus('Đã mở bản in PDF.','ok');
+   }
+ }catch(e){caseStatus('Xuất PDF lỗi: '+e.message,'err')}
+}
 
 if(document.getElementById('caseFile'))document.getElementById('caseFile').addEventListener('change',e=>caseReadFile(e.target.files&&e.target.files[0]));
 caseRestoreKey();caseRender();
