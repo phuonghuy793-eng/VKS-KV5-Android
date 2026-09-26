@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sơ đồ vụ việc AI - Test v2</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.9.1/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--navy:#0b2e59;--blue:#0d6efd;--bg:#eef5fb;--card:#fff;--line:#cbd8e6;--danger:#b42318;--muted:#60758a;--ok:#157347;--warn:#9a6700}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:#172b3f}
+header{background:linear-gradient(135deg,#0b2e59,#13528f);color:#fff;padding:17px 14px;text-align:center;box-shadow:0 2px 12px #0002}
+header h1{margin:0;font-size:21px}header p{margin:5px 0 0;font-size:12px;opacity:.9}
+.wrap{max-width:1050px;margin:14px auto;padding:0 10px 50px}
+.panel{background:#fff;border:1px solid #dce6ef;border-radius:16px;padding:13px;margin-bottom:13px;box-shadow:0 6px 20px #16324f0d}
+.notice{border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:13px;line-height:1.45}
+.notice.warn{background:#fff6df;border:1px solid #efdc9b;color:#705700}.notice.ok{background:#ebf8ef;border:1px solid #b6dfc2;color:#155d31}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}
+label{font-size:13px;font-weight:750;display:block;margin-bottom:5px}
+input,select,textarea,button{font:inherit}input,select,textarea{width:100%;border:1px solid #bfcddd;border-radius:10px;padding:10px;background:#fff;min-height:44px}
+textarea{min-height:180px;resize:vertical;line-height:1.45}
+button{border:0;border-radius:10px;padding:10px 14px;font-weight:750;cursor:pointer;min-height:44px}
+button:disabled{opacity:.55;cursor:not-allowed}
+.primary{background:var(--blue);color:#fff}.secondary{background:#e7f0fa;color:#17456f}.danger{background:#fff0ef;color:var(--danger);border:1px solid #f2c5c1}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.note{font-size:12px;color:var(--muted);line-height:1.45}.status{font-size:13px;font-weight:750;margin-left:auto;line-height:1.4}
+.status.ok{color:var(--ok)}.status.err{color:var(--danger)}.status.busy{color:var(--warn)}
+#diagram{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+.section{background:#fff;border:1px solid #d8e4ef;border-radius:14px;overflow:hidden;break-inside:avoid}
+.section-head{display:flex;align-items:center;gap:8px;background:#edf5ff;padding:10px 12px;border-bottom:1px solid #d8e4ef}
+.section-head h3{margin:0;font-size:15px;color:#0b2e59;flex:1}
+.items{display:grid;grid-template-columns:1fr;gap:7px;padding:8px}
+.item{position:relative;border:1px solid #d4dee8;border-radius:12px;padding:10px;background:#fff}
+.item textarea{min-height:68px;border:0;padding:0;outline:0;font-size:13px;line-height:1.35}
+.item .meta{display:flex;gap:6px;align-items:center;margin-top:7px;flex-wrap:wrap}
+.badge{font-size:11px;padding:4px 7px;border-radius:999px;background:#eef2f6;color:#53687b}
+.badge.low{background:#fff3cd;color:#725b00}.badge.med{background:#e7f1ff;color:#174ea6}.badge.high{background:#e9f7ef;color:#176b3a}
+.iconbtn{padding:5px 8px;min-height:32px;font-size:12px;background:#f4f7fa;color:#526577}
+.addrow{padding:0 8px 8px}.empty{padding:20px;text-align:center;color:#71849a;grid-column:1/-1}
+details{margin-top:8px}summary{cursor:pointer;font-weight:700;color:#17456f}
+.modelbox{font-size:12px;color:#526577;margin-top:5px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.status{width:100%;margin-left:0}#diagram{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.section-head{padding:8px}.section-head h3{font-size:13px}.items{padding:6px}.item{padding:7px}.item textarea{font-size:12px;min-height:60px}.badge{font-size:9px}.addrow{padding:0 6px 6px}.addrow button{font-size:11px;padding:7px 8px;min-height:34px}}
+
+@media print{
+ body{background:#fff}
+ header,.panel,#protocolNotice,.toolbar,.addrow,.meta .del{display:none!important}
+ .wrap{max-width:none;margin:0;padding:0}
+ #diagram{display:grid;grid-template-columns:1fr 1fr;gap:6mm}
+ .section{box-shadow:none;border:1px solid #bbb;border-radius:8px}
+ .section-head{background:#eef5ff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .item{border:0;padding:4px 0}
+ .item textarea{font-size:10pt;min-height:0;overflow:visible;resize:none}
+ .meta{display:none!important}
+}
+
+
+body.singlecol #diagram{grid-template-columns:1fr}
+body.singlecol .items{grid-template-columns:1fr}
+</style>
+</head>
+<body>
+<header>
+  <h1>SƠ ĐỒ VỤ VIỆC — TEST AI v4</h1>
+  <p>Bản riêng để thử khả năng đọc hiểu hồ sơ, không đụng app VKS KV5</p>
+</header>
+
+<div class="wrap">
+  <div id="protocolNotice"></div>
+
+  <div class="panel">
+    <div class="grid">
+      <div>
+        <label>Loại hồ sơ</label>
+        <select id="caseType">
+          <option value="civil">Dân sự</option>
+          <option value="criminal">Hình sự</option>
+        </select>
+      </div>
+      <div>
+        <label>File Word / TXT</label>
+        <input id="file" type="file" accept=".docx,.txt,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+      </div>
+
+      <div class="full">
+        <label>Gemini API key</label>
+        <input id="apiKey" type="password" autocomplete="off" placeholder="Dán khóa API Gemini vào đây">
+        <div class="note">Key chỉ nằm trong ô này khi trang đang mở. Bản test không lưu key vào localStorage.</div>
+        <div id="modelInfo" class="modelbox"></div>
+      </div>
+
+      <div class="full">
+        <label>Nội dung đọc được từ hồ sơ</label>
+        <textarea id="source" placeholder="Chọn file Word hoặc dán nội dung hồ sơ vào đây..."></textarea>
+      </div>
+    </div>
+
+    <div class="toolbar" style="margin-top:10px">
+      <button class="primary" id="analyze">Phân tích và tạo sơ đồ</button>
+      <button class="secondary" id="testKey">Kiểm tra API</button>
+      <button class="secondary" id="clear">Xóa bản thử</button>
+      <button class="secondary" id="export">Xuất JSON</button>
+<button class="secondary" id="exportPdf">Xuất PDF</button>
+<button class="secondary" id="toggleCompact">Đổi kiểu hiển thị</button>
+      <span id="status" class="status"></span>
+    </div>
+
+    <details>
+      <summary>Nguyên tắc AI đang bị khóa</summary>
+      <div class="note" style="margin-top:6px">
+        Chỉ lấy dữ kiện có trong hồ sơ; không tự bịa; không tự bổ sung kiến thức ngoài hồ sơ; mục không có thông tin phải để trống; nội dung chưa chắc phải đánh dấu “Cần kiểm tra”.
+      </div>
+    </details>
+  </div>
+
+  <div id="diagram">
+    <div class="panel empty">Chưa có sơ đồ.</div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+let currentData=null, selectedModel=null;
+
+const SCHEMAS={
+ civil:[
+  ["thong_tin_vu_viec","Thông tin vụ việc"],
+  ["duong_su","Đương sự"],
+  ["quan_he_tranh_chap","Quan hệ tranh chấp"],
+  ["yeu_cau","Yêu cầu của các bên"],
+  ["y_kien_ben_khac","Ý kiến bị đơn / người liên quan"],
+  ["dien_bien","Diễn biến vụ việc"],
+  ["chung_cu","Tài liệu, chứng cứ"],
+  ["tai_san_nghia_vu","Tài sản / nghĩa vụ"],
+  ["moc_to_tung","Mốc tố tụng"],
+  ["van_de_can_luu_y","Vấn đề cần lưu ý"],
+  ["de_xuat","Quan điểm / đề xuất có trong hồ sơ"]
+ ],
+ criminal:[
+  ["thong_tin_vu_an","Thông tin vụ án"],
+  ["bi_can_bi_cao","Bị can / bị cáo"],
+  ["bi_hai_lien_quan","Bị hại / người liên quan"],
+  ["hanh_vi","Hành vi được mô tả trong hồ sơ"],
+  ["chung_cu_buoc_toi","Chứng cứ buộc tội"],
+  ["chung_cu_go_toi","Chứng cứ gỡ tội"],
+  ["vat_chung_tai_san","Vật chứng / tài sản"],
+  ["dien_bien","Diễn biến vụ án"],
+  ["moc_to_tung","Mốc tố tụng"],
+  ["toi_danh_dieu_luat","Tội danh / điều luật được hồ sơ viện dẫn"],
+  ["van_de_can_luu_y","Vấn đề cần lưu ý"],
+  ["de_xuat","Quan điểm / đề xuất có trong hồ sơ"]
+ ]
+};
+
+function showProtocol(){
+ const el=$("#protocolNotice");
+ if(location.protocol==="file:"){
+   el.innerHTML='<div class="notice warn"><b>Đang mở bằng file://</b><br>Trình duyệt điện thoại có thể chặn kết nối Gemini và báo “Failed to fetch”. Bản v4 này nên được mở từ một địa chỉ <b>https://</b> như GitHub Pages.</div>';
+ }else if(location.protocol==="https:"){
+   el.innerHTML='<div class="notice ok"><b>Đang chạy qua HTTPS.</b> Có thể kiểm tra kết nối Gemini.</div>';
+ }else{
+   el.innerHTML='<div class="notice warn">Nên chạy trang này bằng HTTPS để gọi Gemini ổn định.</div>';
+ }
+}
+
+$("#file").addEventListener("change",async e=>{
+ const f=e.target.files[0]; if(!f)return;
+ setStatus("Đang đọc file...","busy");
+ try{
+   if(f.name.toLowerCase().endsWith(".docx")){
+     if(!window.mammoth) throw new Error("Không tải được thư viện đọc Word. Kiểm tra Internet.");
+     const ab=await f.arrayBuffer();
+     const result=await mammoth.extractRawText({arrayBuffer:ab});
+     $("#source").value=result.value.trim();
+   }else{
+     $("#source").value=await f.text();
+   }
+   setStatus("Đã đọc file.","ok");
+ }catch(err){setStatus("Không đọc được file: "+err.message,"err")}
+});
+
+function setStatus(t,c=""){const el=$("#status");el.textContent=t;el.className="status "+c}
+
+async function listModels(key){
+ const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models",{
+   method:"GET",
+   headers:{"x-goog-api-key":key}
+ });
+ if(!r.ok){
+   let msg=await r.text();
+   throw new Error(`Kiểm tra API thất bại (${r.status}): ${compactError(msg)}`);
+ }
+ const j=await r.json();
+ return j.models||[];
+}
+
+function chooseModels(models){
+ const usable=models.filter(m=>(m.supportedGenerationMethods||[]).includes("generateContent"));
+ const names=usable.map(m=>(m.name||"").replace(/^models\//,""));
+ const preferred=[
+   "gemini-3.8-flash",
+   "gemini-3.5-flash",
+   "gemini-3.5-flash-lite",
+   "gemini-3.1-flash-lite",
+   "gemini-2.5-flash",
+   "gemini-2.5-flash-lite",
+   "gemini-2.0-flash"
+ ];
+ const ordered=[];
+ for(const p of preferred) if(names.includes(p) && !ordered.includes(p)) ordered.push(p);
+ for(const n of names){
+   if(/gemini/i.test(n) && /flash/i.test(n) && !/image|tts|live/i.test(n) && !ordered.includes(n)) ordered.push(n);
+ }
+ for(const n of names){
+   if(/gemini/i.test(n) && !/image|tts|live/i.test(n) && !ordered.includes(n)) ordered.push(n);
+ }
+ return ordered;
+}
+
+function compactError(s){
+ try{
+   const j=JSON.parse(s);
+   return j?.error?.message || s.slice(0,250);
+ }catch{return String(s).replace(/\s+/g," ").slice(0,250)}
+}
+
+async function ensureModels(key){
+ const models=await listModels(key);
+ const list=chooseModels(models);
+ if(!list.length) throw new Error("Khóa API hoạt động nhưng không tìm thấy model generateContent phù hợp.");
+ selectedModel=list[0];
+ $("#modelInfo").textContent="Model ưu tiên: "+list[0]+" • Có "+list.length+" model dự phòng";
+ return list;
+}
+
+function schemaPrompt(type,text){
+ const fields=SCHEMAS[type].map(x=>x[0]);
+ const skeleton=Object.fromEntries(fields.map(f=>[f,[]]));
+ return `Bạn là công cụ TRÍCH XUẤT DỮ KIỆN từ hồ sơ pháp lý Việt Nam.
+
+NHIỆM VỤ: chỉ đọc VĂN BẢN NGUỒN bên dưới và xếp dữ kiện vào đúng nhóm.
+
+QUY TẮC BẮT BUỘC:
+1. Không bịa, không tự thêm sự kiện.
+2. Không dùng kiến thức ngoài văn bản nguồn để lấp chỗ trống.
+3. Không tự kết luận ai đúng/sai, trách nhiệm pháp lý hay tội danh nếu nguồn không nêu.
+4. Nếu nhóm không có dữ liệu thì trả mảng rỗng.
+5. Mỗi phần tử phải là object:
+   {"text":"nội dung ngắn gọn, trung thành nguồn","confidence":"high|medium|low"}
+6. "low" khi quan hệ dữ kiện mơ hồ/chưa chắc; không biến suy đoán thành sự thật.
+7. "de_xuat" chỉ điền khi chính nguồn có đề xuất/quan điểm.
+8. Giữ nguyên tên người, số tiền, ngày tháng, số văn bản, thửa đất và điều luật nếu nguồn có.
+9. Trả về JSON hợp lệ duy nhất, không markdown, không lời giải thích ngoài JSON.
+
+LOẠI HỒ SƠ: ${type==="civil"?"DÂN SỰ":"HÌNH SỰ"}
+CẤU TRÚC BẮT BUỘC:
+${JSON.stringify(skeleton)}
+
+VĂN BẢN NGUỒN:
+---BEGIN SOURCE---
+${text}
+---END SOURCE---`;
+}
+
+async function generateOne(key,model,prompt){
+ const url=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+ const body={
+   contents:[{role:"user",parts:[{text:prompt}]}],
+   generationConfig:{
+     temperature:0,
+     responseMimeType:"application/json"
+   }
+ };
+ const r=await fetch(url,{
+   method:"POST",
+   headers:{"Content-Type":"application/json","x-goog-api-key":key},
+   body:JSON.stringify(body)
+ });
+ const raw=await r.text();
+ if(!r.ok){
+   const err=new Error(`Gemini lỗi ${r.status}: ${compactError(raw)}`);
+   err.status=r.status;
+   throw err;
+ }
+ let j; try{j=JSON.parse(raw)}catch{throw new Error("Google trả dữ liệu không đọc được.")}
+ const out=j?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("")||"";
+ if(!out) throw new Error("Gemini không trả nội dung.");
+ try{return JSON.parse(out)}
+ catch{
+   const cleaned=out.replace(/^```json\s*/i,"").replace(/```$/,"").trim();
+   try{return JSON.parse(cleaned)}catch{throw new Error("AI trả JSON không hợp lệ.")}
+ }
+}
+
+async function generateWithFallback(key,models,prompt){
+ let lastErr=null;
+ for(let i=0;i<models.length;i++){
+   const model=models[i];
+   selectedModel=model;
+   $("#modelInfo").textContent=`Đang dùng: ${model} • Dự phòng còn ${models.length-i-1}`;
+   setStatus(`Đang thử model ${i+1}/${models.length}: ${model}...`,"busy");
+   try{
+     const result=await generateOne(key,model,prompt);
+     $("#modelInfo").textContent=`Model đã dùng thành công: ${model}`;
+     return result;
+   }catch(e){
+     lastErr=e;
+     const retryable=[429,500,502,503,504].includes(e.status);
+     if(!retryable) throw e;
+   }
+ }
+ throw new Error("Tất cả model Gemini khả dụng đều đang bận hoặc quá tải. Hãy thử lại sau. Chi tiết cuối: "+(lastErr?.message||""));
+}
+
+function normalize(data,type){
+ const out={};
+ for(const [key] of SCHEMAS[type]){
+   let arr=data?.[key]; if(!Array.isArray(arr))arr=[];
+   out[key]=arr.map(v=>{
+     if(typeof v==="string")return {text:v,confidence:"medium"};
+     return {
+       text:String(v?.text||"").trim(),
+       confidence:["high","medium","low"].includes(v?.confidence)?v.confidence:"medium"
+     };
+   }).filter(v=>v.text);
+ }
+ return out;
+}
+
+function render(){
+ const type=$("#caseType").value, root=$("#diagram");
+ root.innerHTML="";
+ const data=currentData||Object.fromEntries(SCHEMAS[type].map(([k])=>[k,[]]));
+
+ for(const [key,title] of SCHEMAS[type]){
+   const sec=document.createElement("div"); sec.className="section";
+   sec.innerHTML=`<div class="section-head"><h3>${title}</h3><span class="badge">${data[key]?.length||0} ô</span></div><div class="items"></div><div class="addrow"><button class="secondary add">+ Thêm ô</button></div>`;
+   const items=sec.querySelector(".items");
+   const arr=data[key]||[];
+
+   if(!arr.length){
+     items.innerHTML='<div class="note">Không tìm thấy nội dung trong hồ sơ.</div>';
+   }else{
+     arr.forEach((it,idx)=>{
+       const card=document.createElement("div"); card.className="item";
+       const label=it.confidence==="low"?"⚠ Cần kiểm tra":it.confidence==="high"?"Độ tin cậy cao":"Độ tin cậy vừa";
+       card.innerHTML=`<textarea></textarea><div class="meta"><span class="badge ${it.confidence==="low"?"low":it.confidence==="high"?"high":"med"}">${label}</span><button class="iconbtn del">Xóa</button></div>`;
+       const ta=card.querySelector("textarea"); ta.value=it.text;
+       ta.addEventListener("input",e=>data[key][idx].text=e.target.value);
+       card.querySelector(".del").onclick=()=>{data[key].splice(idx,1);currentData=data;render()};
+       items.appendChild(card);
+     });
+   }
+
+   sec.querySelector(".add").onclick=()=>{data[key].push({text:"",confidence:"medium"});currentData=data;render()};
+   root.appendChild(sec);
+ }
+ currentData=data;
+}
+
+$("#testKey").onclick=async()=>{
+ const key=$("#apiKey").value.trim();
+ if(!key)return setStatus("Chưa dán API key.","err");
+ if(location.protocol==="file:") return setStatus("Đang mở file local. Hãy đưa bản này lên GitHub Pages rồi kiểm tra API.","err");
+ setStatus("Đang kiểm tra API...","busy");
+ $("#testKey").disabled=true;
+ try{
+   const models=await ensureModels(key);
+   setStatus("API hoạt động. Có "+models.length+" model sẵn sàng, ưu tiên "+models[0]+".","ok");
+ }catch(e){setStatus(e.message,"err")}
+ finally{$("#testKey").disabled=false}
+};
+
+$("#analyze").onclick=async()=>{
+ const text=$("#source").value.trim(),key=$("#apiKey").value.trim(),type=$("#caseType").value;
+ if(!text)return setStatus("Chưa có nội dung hồ sơ.","err");
+ if(!key)return setStatus("Chưa dán API key Gemini.","err");
+ if(location.protocol==="file:")return setStatus("Không chạy AI từ file local. Hãy mở bản test này bằng link HTTPS.","err");
+
+ setStatus("Đang kết nối Gemini...","busy");
+ $("#analyze").disabled=true;
+ try{
+   const models=await ensureModels(key);
+   setStatus("AI đang đọc và xếp nội dung...","busy");
+   const raw=await generateWithFallback(key,models,schemaPrompt(type,text));
+   currentData=normalize(raw,type);
+   render();
+   setStatus("Đã tạo sơ đồ. Hãy kiểm tra lại nội dung trước khi sử dụng.","ok");
+ }catch(e){setStatus(e.message,"err")}
+ finally{$("#analyze").disabled=false}
+};
+
+$("#caseType").onchange=()=>{currentData=null;render();setStatus("Đã đổi loại hồ sơ.","ok")};
+$("#clear").onclick=()=>{$("#source").value="";$("#file").value="";currentData=null;render();setStatus("Đã xóa bản thử.","ok")};
+$("#export").onclick=()=>{
+ if(!currentData)return setStatus("Chưa có dữ liệu để xuất.","err");
+ const blob=new Blob([JSON.stringify({type:$("#caseType").value,model:selectedModel,data:currentData},null,2)],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="so-do-vu-viec-test.json";a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+};
+
+
+function getPdfLines(doc, text, width){
+  return doc.splitTextToSize(String(text||""), width);
+}
+
+$("#exportPdf").onclick=()=>{
+  if(!currentData) return setStatus("Chưa có dữ liệu để xuất PDF.","err");
+  try{
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+    const type=$("#caseType").value;
+    const title=type==="civil"?"SƠ ĐỒ VỤ VIỆC DÂN SỰ":"SƠ ĐỒ VỤ ÁN HÌNH SỰ";
+    const margin=10, gap=5, colW=(210-margin*2-gap)/2;
+    let y=[15,15];
+
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(15);
+    doc.text(title,105,10,{align:"center"});
+
+    function newPageIfNeeded(col, needed){
+      if(y[col]+needed>287){
+        doc.addPage();
+        y=[15,15];
+      }
+    }
+
+    SCHEMAS[type].forEach(([key,sectionTitle],idx)=>{
+      const col=idx%2;
+      const x=margin+col*(colW+gap);
+      const arr=currentData[key]||[];
+      let blockH=10;
+      const prepared=[];
+
+      for(const it of arr){
+        const lines=getPdfLines(doc,"• "+it.text,colW-8);
+        prepared.push(lines);
+        blockH+=Math.max(6,lines.length*4.2)+2;
+      }
+      if(!arr.length) blockH+=7;
+
+      newPageIfNeeded(col,blockH);
+
+      doc.setDrawColor(190);
+      doc.setFillColor(238,245,255);
+      doc.roundedRect(x,y[col],colW,8,2,2,"FD");
+      doc.setTextColor(11,46,89);
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(10.5);
+      doc.text(sectionTitle,x+3,y[col]+5.3);
+      y[col]+=10;
+
+      doc.setTextColor(30,45,60);
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(9);
+
+      if(!arr.length){
+        doc.setTextColor(120);
+        doc.text("Không có dữ liệu trong hồ sơ.",x+3,y[col]+4);
+        y[col]+=7;
+      }else{
+        for(const lines of prepared){
+          const h=lines.length*4.2;
+          newPageIfNeeded(col,h+3);
+          doc.text(lines,x+3,y[col]+3.5);
+          y[col]+=h+2;
+        }
+      }
+      y[col]+=3;
+    });
+
+    doc.save(type==="civil"?"so-do-vu-viec-dan-su.pdf":"so-do-vu-an-hinh-su.pdf");
+    setStatus("Đã xuất PDF.","ok");
+  }catch(e){
+    setStatus("Không xuất được PDF: "+e.message,"err");
+  }
+};
+
+$("#toggleCompact").onclick=()=>{
+  document.body.classList.toggle("singlecol");
+  $("#toggleCompact").textContent=document.body.classList.contains("singlecol")?"Hiển thị 2 cột":"Hiển thị 1 cột";
+};
+
+showProtocol(); render();
+</script>
+</body>
+</html>
