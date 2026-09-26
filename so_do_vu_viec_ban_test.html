@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sơ đồ vụ việc - Bản test</title>
+  <style>
+    :root{
+      --blue:#2f80ed;
+      --blue-dark:#163d8f;
+      --blue-soft:#eaf4ff;
+      --blue-line:#b9d8ff;
+      --text:#17335f;
+      --muted:#5c7094;
+      --bg:#f4f9ff;
+      --card:#ffffff;
+      --shadow:0 8px 24px rgba(29,78,216,.08);
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:linear-gradient(180deg,#eef7ff 0%, #f9fbff 38%, #f4f8fd 100%);
+      color:var(--text);
+    }
+    .page{
+      max-width:860px;
+      margin:0 auto;
+      min-height:100vh;
+      padding:24px 18px 36px;
+    }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:16px;
+      gap:10px;
+    }
+    .back,.more{
+      width:44px;height:44px;border-radius:14px;border:none;
+      background:#fff;box-shadow:var(--shadow);color:var(--blue-dark);
+      font-size:24px;cursor:pointer;
+    }
+    .headline{
+      flex:1;text-align:center;
+    }
+    .headline h1{
+      margin:0;
+      font-size:clamp(24px,4.5vw,42px);
+      line-height:1.15;
+      color:#173d8f;
+    }
+    .headline p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:clamp(14px,2vw,20px);
+    }
+    .panel{
+      background:var(--card);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+      padding:22px 18px 26px;
+      border:1px solid #e9f2ff;
+    }
+    .tabs{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:0;
+      background:#edf5ff;
+      padding:6px;
+      border-radius:22px;
+      max-width:520px;
+      margin:6px auto 22px;
+    }
+    .tab{
+      border:none;
+      background:transparent;
+      color:var(--blue-dark);
+      padding:14px 10px;
+      font-weight:700;
+      font-size:clamp(18px,2.4vw,22px);
+      border-radius:18px;
+      cursor:pointer;
+    }
+    .tab.active{
+      background:linear-gradient(135deg,#3c8ef5,#2d6fe4);
+      color:#fff;
+      box-shadow:0 6px 18px rgba(47,128,237,.25);
+    }
+    .flow{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      max-width:680px;
+      margin:0 auto;
+    }
+    .node{
+      position:relative;
+      background:var(--card);
+      border:2px solid var(--blue-line);
+      border-radius:22px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+    }
+    .node-head{
+      background:linear-gradient(90deg,#e9f4ff 0%,#dff0ff 100%);
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:16px 18px 12px;
+    }
+    .icon{
+      width:54px;height:54px;border-radius:50%;
+      background:linear-gradient(180deg,#edf6ff,#d7ebff);
+      display:flex;align-items:center;justify-content:center;
+      color:var(--blue);
+      font-size:28px;
+      flex:none;
+    }
+    .node-title{
+      font-weight:800;
+      font-size:clamp(20px,3vw,28px);
+      line-height:1.2;
+      color:#163d8f;
+    }
+    .node-body{
+      padding:14px 18px 18px 86px;
+    }
+    .node textarea, .node input{
+      width:100%;
+      border:none;
+      outline:none;
+      font:inherit;
+      color:#243b63;
+      background:transparent;
+      resize:vertical;
+      min-height:28px;
+    }
+    .node textarea{min-height:44px}
+    .arrow{
+      width:0;
+      height:42px;
+      margin:0 auto;
+      position:relative;
+    }
+    .arrow::before{
+      content:"";
+      position:absolute;
+      left:50%; top:0;
+      transform:translateX(-50%);
+      width:8px;height:24px;
+      background:linear-gradient(180deg,#57a1ff,#2f80ed);
+      border-radius:999px;
+    }
+    .arrow::after{
+      content:"";
+      position:absolute;
+      left:50%;bottom:0;
+      transform:translateX(-50%);
+      border-left:14px solid transparent;
+      border-right:14px solid transparent;
+      border-top:18px solid #2f80ed;
+      filter:drop-shadow(0 4px 8px rgba(47,128,237,.18));
+    }
+    .controls{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+      max-width:760px;
+      margin:26px auto 10px;
+    }
+    .btn{
+      border:none;
+      border-radius:18px;
+      padding:18px 14px;
+      font-size:clamp(18px,2vw,26px);
+      font-weight:800;
+      cursor:pointer;
+      min-height:66px;
+    }
+    .btn-primary{background:linear-gradient(135deg,#3c8ef5,#2d6fe4);color:#fff}
+    .btn-light{background:#edf3fb;color:#395785}
+    .hint{
+      text-align:center;
+      color:#6c7e9c;
+      font-size:clamp(14px,1.8vw,18px);
+      margin-top:18px;
+    }
+    .toolbar{
+      display:flex;justify-content:flex-end;gap:8px; padding:10px 14px 0;
+    }
+    .mini{
+      border:none;background:#eff5ff;color:#355787;border-radius:12px;
+      padding:8px 12px;font-weight:700;cursor:pointer;font-size:14px;
+    }
+    @media (max-width:640px){
+      .page{padding:14px 12px 28px}
+      .panel{padding:16px 12px 22px;border-radius:24px}
+      .node-head{padding:14px 14px 10px;gap:12px}
+      .icon{width:46px;height:46px;font-size:24px}
+      .node-body{padding:12px 14px 16px 14px}
+      .controls{grid-template-columns:1fr;gap:12px}
+      .btn{min-height:60px}
+      .toolbar{padding:10px 10px 0}
+    }
+    @media print{
+      body{background:#fff}
+      .topbar,.controls,.hint,.toolbar{display:none !important}
+      .page{padding:0;max-width:none}
+      .panel{box-shadow:none;border:none;padding:0}
+      .node{break-inside:avoid;box-shadow:none}
+      .flow{max-width:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <button class="back">‹</button>
+      <div class="headline">
+        <h1>Sơ đồ vụ việc - Bản test</h1>
+        <p>Khung rút gọn, chỉ giữ nội dung quan trọng</p>
+      </div>
+      <button class="more">⋮</button>
+    </div>
+
+    <div class="panel">
+      <div class="tabs">
+        <button class="tab active" data-mode="dan-su">Dân sự</button>
+        <button class="tab" data-mode="hinh-su">Hình sự</button>
+      </div>
+
+      <div class="flow" id="flow"></div>
+
+      <div class="controls">
+        <button class="btn btn-primary" id="addBtn">＋ Thêm ô</button>
+        <button class="btn btn-light" id="removeBtn">🗑️ Xóa ô</button>
+        <button class="btn btn-light" id="pdfBtn">📄 Xuất PDF</button>
+      </div>
+      <div class="hint">Có thể chỉnh sửa, thêm hoặc xóa ô trước khi xuất.</div>
+    </div>
+  </div>
+
+  <template id="nodeTpl">
+    <div class="node">
+      <div class="toolbar">
+        <button class="mini up">↑ Lên</button>
+        <button class="mini down">↓ Xuống</button>
+      </div>
+      <div class="node-head">
+        <div class="icon"></div>
+        <input class="node-title" />
+      </div>
+      <div class="node-body">
+        <textarea class="node-content"></textarea>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    const presets = {
+      'dan-su': [
+        {icon:'📄', title:'Thông tin vụ việc', content:'Tranh chấp hợp đồng vay tài sản'},
+        {icon:'👥', title:'Đương sự', content:'Nguyên đơn: A | Bị đơn: B'},
+        {icon:'⚖️', title:'Quan hệ tranh chấp', content:'Yêu cầu trả tiền vay'},
+        {icon:'📝', title:'Diễn biến chính', content:'Vay tiền, đến hạn chưa thanh toán'},
+        {icon:'📁', title:'Chứng cứ chính', content:'Giấy vay tiền, biên nhận, lời khai'},
+        {icon:'💡', title:'Đề xuất xử lý', content:'Đề nghị chấp nhận một phần yêu cầu'}
+      ],
+      'hinh-su': [
+        {icon:'📄', title:'Thông tin vụ án', content:'Vụ án cố ý gây thương tích'},
+        {icon:'👤', title:'Bị can / bị cáo', content:'Nguyễn Văn A'},
+        {icon:'⚖️', title:'Tội danh', content:'Cố ý gây thương tích'},
+        {icon:'📝', title:'Diễn biến chính', content:'Xô xát, dùng hung khí gây thương tích'},
+        {icon:'📁', title:'Chứng cứ chính', content:'Kết luận giám định, lời khai, vật chứng'},
+        {icon:'💡', title:'Đề xuất xử lý', content:'Truy tố theo điều luật phù hợp'}
+      ]
+    };
+
+    let currentMode = 'dan-su';
+    let nodes = JSON.parse(JSON.stringify(presets[currentMode]));
+
+    const flow = document.getElementById('flow');
+    const tpl = document.getElementById('nodeTpl');
+
+    function render(){
+      flow.innerHTML = '';
+      nodes.forEach((item, index) => {
+        const frag = tpl.content.cloneNode(true);
+        const node = frag.querySelector('.node');
+        frag.querySelector('.icon').textContent = item.icon;
+        const title = frag.querySelector('.node-title');
+        const content = frag.querySelector('.node-content');
+        title.value = item.title;
+        content.value = item.content;
+        title.oninput = e => nodes[index].title = e.target.value;
+        content.oninput = e => nodes[index].content = e.target.value;
+        frag.querySelector('.up').onclick = () => moveNode(index, -1);
+        frag.querySelector('.down').onclick = () => moveNode(index, 1);
+        flow.appendChild(frag);
+        if(index < nodes.length - 1){
+          const arrow = document.createElement('div');
+          arrow.className = 'arrow';
+          flow.appendChild(arrow);
+        }
+      });
+    }
+
+    function moveNode(index, dir){
+      const target = index + dir;
+      if(target < 0 || target >= nodes.length) return;
+      [nodes[index], nodes[target]] = [nodes[target], nodes[index]];
+      render();
+    }
+
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+        nodes = JSON.parse(JSON.stringify(presets[currentMode]));
+        render();
+      });
+    });
+
+    document.getElementById('addBtn').onclick = () => {
+      nodes.push({icon:'🧩', title:'Ô mới', content:'Nhập nội dung quan trọng'});
+      render();
+      window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'});
+    };
+
+    document.getElementById('removeBtn').onclick = () => {
+      if(nodes.length > 1){
+        nodes.pop();
+        render();
+      }
+    };
+
+    document.getElementById('pdfBtn').onclick = () => window.print();
+
+    render();
+  </script>
+</body>
+</html>
