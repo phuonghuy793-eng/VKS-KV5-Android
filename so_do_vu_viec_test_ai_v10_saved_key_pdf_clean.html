@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sơ đồ vụ việc AI - Test v10</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.9.1/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+:root{
+ --blue:#2f80ed;--navy:#163d8f;--soft:#eaf4ff;--line:#b9d8ff;
+ --text:#17335f;--muted:#617491;--bg:#f4f9ff;--card:#fff;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#eef7ff,#f8fbff);color:var(--text)}
+.page{max-width:900px;margin:auto;padding:16px 12px 40px}
+header{text-align:center;margin-bottom:14px}
+header h1{margin:0;color:var(--navy);font-size:24px}
+header p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.panel{background:#fff;border:1px solid #e0ebf6;border-radius:18px;padding:14px;margin-bottom:14px;box-shadow:0 8px 24px rgba(20,65,120,.06)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.full{grid-column:1/-1}
+label{display:block;font-size:13px;font-weight:800;margin-bottom:5px}
+input,select,textarea,button{font:inherit}
+input,select,textarea{width:100%;min-height:44px;border:1px solid #bfd0e2;border-radius:10px;padding:10px;background:#fff}
+textarea{min-height:140px;resize:vertical;line-height:1.45}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:#edf5ff;border-radius:16px;padding:5px;margin-bottom:12px}
+.tab{border:0;background:transparent;border-radius:13px;padding:12px;font-weight:800;color:var(--navy);cursor:pointer}
+.tab.active{background:linear-gradient(135deg,#3c8ef5,#2d6fe4);color:#fff}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+button{border:0;border-radius:10px;padding:10px 13px;font-weight:800;cursor:pointer;min-height:42px}
+.primary{background:var(--blue);color:#fff}
+.secondary{background:#edf3fb;color:#31547e}
+.status{font-size:13px;font-weight:800;margin-top:8px}
+.ok{color:#157347}.err{color:#b42318}.busy{color:#9a6700}
+.note{font-size:12px;color:var(--muted);line-height:1.45;margin-top:5px}
+
+.case-title-wrap{
+  max-width:690px;margin:0 auto 14px;
+  border:2px solid #8fc3ff;border-radius:18px;
+  background:linear-gradient(180deg,#f9fcff,#eef7ff);
+  padding:12px 14px;box-shadow:0 7px 18px rgba(30,90,160,.07)
+}
+.case-title-label{font-size:12px;color:#5b7191;font-weight:800;margin-bottom:4px}
+.case-title{
+  border:0!important;background:transparent!important;padding:0!important;
+  font-size:20px;font-weight:900;color:#163d8f;min-height:36px!important
+}
+
+.flow{max-width:690px;margin:0 auto}
+.node{background:#fff;border:2px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 7px 18px rgba(30,90,160,.07);break-inside:avoid}
+.node-head{background:linear-gradient(90deg,#eaf4ff,#dff0ff);display:flex;gap:12px;align-items:center;padding:12px 14px}
+.icon{width:46px;height:46px;border-radius:50%;background:#dbeeff;display:flex;align-items:center;justify-content:center;font-size:23px;flex:none}
+.node-title{border:0!important;background:transparent!important;padding:0!important;min-height:auto!important;font-weight:900;color:var(--navy);font-size:18px}
+.node-body{padding:10px 14px 12px}
+.node-content{border:0!important;background:transparent!important;padding:0!important;min-height:58px!important;resize:vertical;line-height:1.45}
+.tools{display:flex;gap:6px;justify-content:flex-end;margin-top:7px}
+.mini{padding:6px 9px;min-height:30px;font-size:12px;background:#eff5fb;color:#45617d}
+.arrow{height:38px;position:relative;break-after:avoid}
+.arrow:before{content:"";position:absolute;left:50%;top:2px;transform:translateX(-50%);width:7px;height:22px;background:#4090f4;border-radius:99px}
+.arrow:after{content:"";position:absolute;left:50%;bottom:2px;transform:translateX(-50%);border-left:12px solid transparent;border-right:12px solid transparent;border-top:15px solid #2f80ed}
+
+.bottom-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.pdf-work{position:fixed;left:-100000px;top:0;width:900px;background:#fff;padding:10px}
+.pdf-work textarea,.pdf-work input{display:none!important}
+.pdftext{white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;line-height:1.45}
+.pdf-work .tools{display:none!important}
+.pdf-work .node{border:2px solid #b9d8ff!important}
+.pdf-work .node-head{border-bottom:none!important}
+.pdf-work .node-body{border-top:none!important}
+.pdf-work hr{display:none!important}
+.pdf-work *{text-decoration:none!important}
+.pdf-work .pdftext{border:0!important}
+
+@media(max-width:640px){
+ .grid{grid-template-columns:1fr}.full{grid-column:auto}
+ .bottom-actions{grid-template-columns:1fr}
+ .node-title{font-size:16px}.node-content{font-size:13px}
+ .case-title{font-size:17px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+<header>
+  <h1>Sơ đồ vụ việc - Bản test v10</h1>
+  <p>Rút gọn nội dung quan trọng • Có mũi tên • Tự tạo tên vụ án</p>
+</header>
+
+<div class="panel">
+  <div class="tabs">
+    <button class="tab active" data-type="civil">Dân sự</button>
+    <button class="tab" data-type="criminal">Hình sự</button>
+  </div>
+
+  <div class="grid">
+    <div class="full">
+      <label>1. Chọn file Word / TXT</label>
+      <input id="file" type="file" accept=".docx,.txt,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+    </div>
+
+    <div class="full">
+      <label>2. Gemini API key</label>
+      <input id="apiKey" type="password" autocomplete="off" placeholder="Dán API key Gemini">
+      <div class="note">
+        Chưa có key? 
+        <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:#2f80ed;font-weight:800;text-decoration:none">
+          Mở Google AI Studio để lấy API key
+        </a>
+      </div>
+      <div class="actions" style="margin-top:7px">
+        <button class="secondary" id="saveKey">💾 Lưu API key trên thiết bị</button>
+        <button class="secondary" id="clearKey">🧹 Xóa key đã lưu</button>
+      </div>
+      <div class="note">Key được lưu cục bộ trên thiết bị này bằng localStorage để lần sau mở lại không phải nhập lại.</div>
+    </div>
+
+    <div class="full">
+      <label>3. Nội dung đọc được từ hồ sơ</label>
+      <textarea id="source" placeholder="Chọn file Word hoặc dán nội dung hồ sơ vào đây..."></textarea>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="secondary" id="testApi">Kiểm tra API</button>
+    <button class="primary" id="analyze">Phân tích và tạo sơ đồ</button>
+  </div>
+  <div id="status" class="status"></div>
+</div>
+
+<div class="panel">
+  <div class="case-title-wrap">
+    <div class="case-title-label">TÊN VỤ ÁN</div>
+    <input id="caseTitle" class="case-title" value="Vụ án dân sự">
+  </div>
+
+  <div id="flow" class="flow"></div>
+
+  <div class="bottom-actions">
+    <button class="primary" id="add">＋ Thêm ô</button>
+    <button class="secondary" id="remove">🗑 Xóa ô cuối</button>
+    <button class="secondary" id="pdf">📄 Xuất PDF</button>
+  </div>
+</div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+let caseType="civil";
+let modelList=[];
+
+const ICONS=["📄","👥","⚖️","📝","📁","💡","🧩"];
+
+const DEFAULTS={
+ civil:[
+  {title:"Thông tin vụ việc",content:""},
+  {title:"Đương sự",content:""},
+  {title:"Quan hệ tranh chấp",content:""},
+  {title:"Diễn biến chính",content:""},
+  {title:"Chứng cứ chính",content:""},
+  {title:"Đề xuất xử lý",content:""}
+ ],
+ criminal:[
+  {title:"Thông tin vụ án",content:""},
+  {title:"Bị can / Bị cáo",content:""},
+  {title:"Hành vi / diễn biến chính",content:""},
+  {title:"Chứng cứ chính",content:""},
+  {title:"Vấn đề cần chứng minh",content:""},
+  {title:"Đề xuất xử lý",content:""}
+ ]
+};
+
+let nodes=JSON.parse(JSON.stringify(DEFAULTS.civil));
+
+function setStatus(t,c=""){const el=$("#status");el.textContent=t;el.className="status "+c}
+
+function render(){
+ const flow=$("#flow");
+ flow.innerHTML="";
+ nodes.forEach((n,i)=>{
+   const node=document.createElement("div");
+   node.className="node";
+   node.innerHTML=`
+    <div class="node-head" style="border-bottom:none">
+      <div class="icon">${ICONS[Math.min(i,ICONS.length-1)]}</div>
+      <input class="node-title" value="">
+    </div>
+    <div class="node-body">
+      <textarea class="node-content"></textarea>
+      <div class="tools">
+        <button class="mini up">↑ Lên</button>
+        <button class="mini down">↓ Xuống</button>
+        <button class="mini del">Xóa</button>
+      </div>
+    </div>`;
+   node.querySelector(".node-title").value=n.title;
+   node.querySelector(".node-content").value=n.content;
+   node.querySelector(".node-title").oninput=e=>nodes[i].title=e.target.value;
+   node.querySelector(".node-content").oninput=e=>nodes[i].content=e.target.value;
+   node.querySelector(".up").onclick=()=>move(i,-1);
+   node.querySelector(".down").onclick=()=>move(i,1);
+   node.querySelector(".del").onclick=()=>{nodes.splice(i,1);render()};
+   flow.appendChild(node);
+
+   if(i<nodes.length-1){
+     const a=document.createElement("div");
+     a.className="arrow";
+     flow.appendChild(a);
+   }
+ });
+}
+
+function move(i,d){
+ const j=i+d;if(j<0||j>=nodes.length)return;
+ [nodes[i],nodes[j]]=[nodes[j],nodes[i]];
+ render();
+}
+
+document.querySelectorAll(".tab").forEach(b=>{
+ b.onclick=()=>{
+   document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+   b.classList.add("active");
+   caseType=b.dataset.type;
+   nodes=JSON.parse(JSON.stringify(DEFAULTS[caseType]));
+   $("#caseTitle").value=caseType==="civil"?"Vụ án dân sự":"Vụ án hình sự";
+   render();
+ };
+});
+
+$("#file").onchange=async e=>{
+ const f=e.target.files[0];if(!f)return;
+ setStatus("Đang đọc file...","busy");
+ try{
+   if(f.name.toLowerCase().endsWith(".docx")){
+     const ab=await f.arrayBuffer();
+     const r=await mammoth.extractRawText({arrayBuffer:ab});
+     $("#source").value=r.value.trim();
+   }else{
+     $("#source").value=await f.text();
+   }
+   setStatus("Đã đọc file.","ok");
+ }catch(err){setStatus("Không đọc được file: "+err.message,"err")}
+};
+
+async function listModels(key){
+ const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models",{
+   headers:{"x-goog-api-key":key}
+ });
+ const raw=await r.text();
+ if(!r.ok)throw new Error("API lỗi "+r.status+": "+raw.slice(0,180));
+ const j=JSON.parse(raw);
+ return (j.models||[])
+  .filter(m=>(m.supportedGenerationMethods||[]).includes("generateContent"))
+  .map(m=>(m.name||"").replace(/^models\//,""))
+  .filter(n=>/gemini/i.test(n) && !/image|tts|live/i.test(n));
+}
+
+function orderModels(names){
+ const pref=["gemini-3.8-flash","gemini-3.5-flash","gemini-3.5-flash-lite","gemini-2.5-flash","gemini-2.5-flash-lite","gemini-2.0-flash"];
+ const out=[];
+ pref.forEach(x=>{if(names.includes(x)&&!out.includes(x))out.push(x)});
+ names.filter(x=>/flash/i.test(x)).forEach(x=>{if(!out.includes(x))out.push(x)});
+ names.forEach(x=>{if(!out.includes(x))out.push(x)});
+ return out;
+}
+
+$("#testApi").onclick=async()=>{
+ const key=$("#apiKey").value.trim();
+ if(!key)return setStatus("Chưa dán API key.","err");
+ if(location.protocol==="file:")return setStatus("Hãy mở bản test bằng link HTTPS trên GitHub Pages.","err");
+ setStatus("Đang kiểm tra API...","busy");
+ try{
+   modelList=orderModels(await listModels(key));
+   if(!modelList.length)throw new Error("Không có model Gemini phù hợp.");
+   setStatus("API hoạt động. Có "+modelList.length+" model khả dụng.","ok");
+ }catch(e){setStatus(e.message,"err")}
+};
+
+function promptFor(text){
+ const structure=caseType==="civil"
+ ?[
+   "Thông tin vụ việc",
+   "Đương sự",
+   "Quan hệ tranh chấp",
+   "Diễn biến chính",
+   "Chứng cứ chính",
+   "Đề xuất xử lý"
+ ]
+ :[
+   "Thông tin vụ án",
+   "Bị can / Bị cáo",
+   "Hành vi / diễn biến chính",
+   "Chứng cứ chính",
+   "Vấn đề cần chứng minh",
+   "Đề xuất xử lý"
+ ];
+
+ const titleRule=caseType==="civil"
+ ?'Tạo "case_title" theo mẫu: "Vụ án [quan hệ tranh chấp] giữa nguyên đơn [tên] và bị đơn [tên]". Nếu thiếu tên thì rút gọn theo dữ liệu có thật, không bịa.'
+ :'Tạo "case_title" theo mẫu: "Vụ án [tội danh] - Bị can [họ tên]". Nếu hồ sơ dùng bị cáo thay bị can thì dùng "Bị cáo". Nếu thiếu dữ liệu thì rút gọn theo dữ liệu có thật, không bịa.';
+
+ return `Bạn là công cụ trích xuất dữ kiện từ hồ sơ pháp lý Việt Nam.
+
+YÊU CẦU:
+- Chỉ dùng dữ liệu có trong văn bản nguồn.
+- Không bịa, không tự thêm dữ kiện.
+- Chỉ lấy nội dung QUAN TRỌNG NHẤT.
+- Bỏ câu chữ hành chính, câu dẫn, nội dung lặp.
+- Mỗi khối tối đa 3-5 ý ngắn.
+- Mỗi ý tối đa 1-2 câu.
+- Nếu không có dữ liệu thì để chuỗi rỗng.
+- ${titleRule}
+
+Trả JSON đúng cấu trúc:
+{
+ "case_title":"...",
+ "nodes":[
+   ${structure.map(t=>`{"title":"${t}","content":"..."}`).join(",")}
+ ]
+}
+
+Loại hồ sơ: ${caseType==="civil"?"DÂN SỰ":"HÌNH SỰ"}
+
+VĂN BẢN NGUỒN:
+---BEGIN---
+${text}
+---END---`;
+}
+
+async function askModel(key,model,prompt){
+ const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{
+  method:"POST",
+  headers:{"Content-Type":"application/json","x-goog-api-key":key},
+  body:JSON.stringify({
+    contents:[{role:"user",parts:[{text:prompt}]}],
+    generationConfig:{temperature:0,responseMimeType:"application/json"}
+  })
+ });
+ const raw=await r.text();
+ if(!r.ok){const er=new Error(raw.slice(0,250));er.status=r.status;throw er}
+ const j=JSON.parse(raw);
+ const out=j?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("")||"";
+ return JSON.parse(out.replace(/^```json\s*/i,"").replace(/```$/,"").trim());
+}
+
+$("#analyze").onclick=async()=>{
+ const key=$("#apiKey").value.trim(),src=$("#source").value.trim();
+ if(!key)return setStatus("Chưa dán API key.","err");
+ if(!src)return setStatus("Chưa có nội dung hồ sơ.","err");
+ if(location.protocol==="file:")return setStatus("Hãy mở bản test bằng GitHub Pages/HTTPS.","err");
+
+ setStatus("AI đang đọc hồ sơ...","busy");
+ try{
+   if(!modelList.length)modelList=orderModels(await listModels(key));
+   let lastErr=null,data=null,used="";
+   for(let i=0;i<modelList.length;i++){
+     const m=modelList[i];
+     setStatus(`Đang thử model ${i+1}/${modelList.length}: ${m}`,"busy");
+     try{
+       data=await askModel(key,m,promptFor(src));
+       used=m;break;
+     }catch(e){
+       lastErr=e;
+       if(![429,500,502,503,504].includes(e.status))throw e;
+     }
+   }
+   if(!data)throw lastErr||new Error("Không có model khả dụng.");
+
+   $("#caseTitle").value=String(data.case_title|| (caseType==="civil"?"Vụ án dân sự":"Vụ án hình sự")).trim();
+
+   const arr=Array.isArray(data.nodes)?data.nodes:[];
+   nodes=DEFAULTS[caseType].map((d,i)=>({
+     title:String(arr[i]?.title||d.title),
+     content:String(arr[i]?.content||"").trim()
+   }));
+
+   render();
+   setStatus("Đã tạo sơ đồ bằng "+used+". Hãy kiểm tra lại nội dung.","ok");
+ }catch(e){setStatus("Phân tích thất bại: "+e.message,"err")}
+};
+
+$("#add").onclick=()=>{nodes.push({title:"Ô mới",content:""});render()};
+$("#remove").onclick=()=>{if(nodes.length>1){nodes.pop();render()}};
+
+function safeFilename(s){
+ return (s||"so-do-vu-an")
+   .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+   .replace(/đ/g,"d").replace(/Đ/g,"D")
+   .replace(/[^\w\s-]/g,"")
+   .trim().replace(/\s+/g,"-")
+   .slice(0,120)+".pdf";
+}
+
+$("#pdf").onclick=async()=>{
+ if(!window.html2canvas||!window.jspdf)return setStatus("Chưa tải đủ thư viện PDF.","err");
+ setStatus("Đang tạo PDF, không cắt giữa các ô...","busy");
+
+ try{
+   const {jsPDF}=window.jspdf;
+   const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+   const pageW=210,pageH=297,margin=10,usableW=190,usableH=277;
+   let y=margin;
+
+   // render title block
+   const titleBox=document.querySelector(".case-title-wrap");
+   const titleClone=titleBox.cloneNode(true);
+   const titleInput=titleClone.querySelector("input");
+   const titleText=document.createElement("div");
+   titleText.className="pdftext";
+   titleText.style.fontSize="20px";
+   titleText.style.fontWeight="900";
+   titleText.style.color="#163d8f";
+   titleText.textContent=$("#caseTitle").value;
+   titleInput.replaceWith(titleText);
+
+   const temp=document.createElement("div");
+   temp.className="pdf-work";
+   temp.appendChild(titleClone);
+   document.body.appendChild(temp);
+
+   async function renderElement(el){
+     const c=await html2canvas(el,{scale:2,backgroundColor:"#fff",useCORS:true,logging:false});
+     return c;
+   }
+
+   let c=await renderElement(titleClone);
+   let hMm=c.height*(usableW/c.width);
+   if(y+hMm>pageH-margin){pdf.addPage();y=margin}
+   pdf.addImage(c.toDataURL("image/jpeg",.96),"JPEG",margin,y,usableW,hMm);
+   y+=hMm+4;
+
+   temp.remove();
+
+   const nodeEls=[...document.querySelectorAll("#flow .node")];
+
+   for(let i=0;i<nodeEls.length;i++){
+     const src=nodeEls[i];
+     const clone=src.cloneNode(true);
+
+     // replace inputs/textarea by real wrapped text
+     const srcFields=[...src.querySelectorAll("input,textarea")];
+     const cloneFields=[...clone.querySelectorAll("input,textarea")];
+     cloneFields.forEach((el,idx)=>{
+       const d=document.createElement("div");
+       d.className="pdftext";
+       d.textContent=srcFields[idx]?.value||"";
+       if(el.classList.contains("node-title")){
+         d.style.fontSize="18px";
+         d.style.fontWeight="900";
+         d.style.color="#163d8f";
+       }
+       el.replaceWith(d);
+     });
+
+     clone.querySelectorAll(".tools").forEach(x=>x.remove());
+
+     const wrap=document.createElement("div");
+     wrap.className="pdf-work";
+     wrap.appendChild(clone);
+     document.body.appendChild(wrap);
+
+     const canvas=await renderElement(clone);
+     wrap.remove();
+
+     const blockH=canvas.height*(usableW/canvas.width);
+
+     // nếu khối không đủ chỗ, đẩy NGUYÊN KHỐI sang trang mới
+     if(y+blockH>pageH-margin){
+       pdf.addPage();
+       y=margin;
+     }
+
+     pdf.addImage(canvas.toDataURL("image/jpeg",.96),"JPEG",margin,y,usableW,blockH);
+     y+=blockH;
+
+     // arrow goes with previous block if there is another block
+     if(i<nodeEls.length-1){
+       const arrow=document.createElement("div");
+       arrow.className="arrow";
+       arrow.style.width="190mm";
+       const aw=document.createElement("div");
+       aw.className="pdf-work";
+       aw.appendChild(arrow);
+       document.body.appendChild(aw);
+
+       const ac=await renderElement(arrow);
+       aw.remove();
+
+       const arrowH=ac.height*(usableW/ac.width);
+
+       // nếu arrow + next minimum space không vừa, sang trang mới
+       if(y+arrowH+20>pageH-margin){
+         pdf.addPage();
+         y=margin;
+       }else{
+         pdf.addImage(ac.toDataURL("image/png"),"PNG",margin,y,usableW,arrowH);
+         y+=arrowH;
+       }
+     }
+   }
+
+   pdf.save(safeFilename($("#caseTitle").value));
+   setStatus("Đã xuất PDF. Các ô được giữ nguyên khối, không cắt giữa ô.","ok");
+ }catch(e){
+   setStatus("Xuất PDF lỗi: "+e.message,"err");
+ }
+};
+
+
+const API_KEY_STORAGE="vks_kv5_gemini_api_key_v1";
+
+function restoreSavedKey(){
+  try{
+    const saved=localStorage.getItem(API_KEY_STORAGE)||"";
+    if(saved){
+      $("#apiKey").value=saved;
+      setStatus("Đã nạp API key đã lưu trên thiết bị.","ok");
+    }
+  }catch(e){}
+}
+
+$("#saveKey").onclick=()=>{
+  const key=$("#apiKey").value.trim();
+  if(!key)return setStatus("Chưa có API key để lưu.","err");
+  try{
+    localStorage.setItem(API_KEY_STORAGE,key);
+    setStatus("Đã lưu API key trên thiết bị này.","ok");
+  }catch(e){
+    setStatus("Không lưu được API key trên thiết bị: "+e.message,"err");
+  }
+};
+
+$("#clearKey").onclick=()=>{
+  try{ localStorage.removeItem(API_KEY_STORAGE); }catch(e){}
+  $("#apiKey").value="";
+  setStatus("Đã xóa API key đã lưu.","ok");
+};
+
+restoreSavedKey();
+render();
+</script>
+</body>
+</html>
