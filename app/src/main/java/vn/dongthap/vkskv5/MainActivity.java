@@ -8,6 +8,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.print.PrintAttributes;
+import android.print.PrintManager;
+import android.print.PrintDocumentAdapter;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.view.ViewGroup;
@@ -137,6 +140,51 @@ public class MainActivity extends Activity {
     }
 
     private class AndroidFileBridge {
+        @JavascriptInterface
+        public void printHtmlToPdf(String html, String requestedName) {
+            runOnUiThread(() -> {
+                try {
+                    final WebView printView = new WebView(MainActivity.this);
+                    WebSettings ps = printView.getSettings();
+                    ps.setJavaScriptEnabled(false);
+                    ps.setLoadsImagesAutomatically(true);
+                    ps.setDefaultTextEncodingName("UTF-8");
+
+                    printView.setWebViewClient(new WebViewClient() {
+                        @Override
+                        public void onPageFinished(WebView view, String url) {
+                            view.postDelayed(() -> {
+                                try {
+                                    String jobName = requestedName == null ? "So do vu an" : requestedName;
+                                    jobName = jobName.replaceAll("[\\\\/:*?\"<>|]", "").replaceAll("(?i)\\.pdf$", "").trim();
+                                    if (jobName.isEmpty()) jobName = "So do vu an";
+
+                                    PrintManager printManager = (PrintManager) getSystemService(PRINT_SERVICE);
+                                    PrintDocumentAdapter adapter;
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                        adapter = printView.createPrintDocumentAdapter(jobName);
+                                    } else {
+                                        adapter = printView.createPrintDocumentAdapter();
+                                    }
+                                    PrintAttributes attrs = new PrintAttributes.Builder()
+                                            .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
+                                            .setColorMode(PrintAttributes.COLOR_MODE_COLOR)
+                                            .setMinMargins(new PrintAttributes.Margins(300, 300, 300, 300))
+                                            .build();
+                                    printManager.print(jobName, adapter, attrs);
+                                } catch (Exception e) {
+                                    Toast.makeText(MainActivity.this, "Xuất PDF thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                }
+                            }, 350);
+                        }
+                    });
+                    printView.loadDataWithBaseURL("https://local.vks/", html, "text/html", "UTF-8", null);
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Xuất PDF thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+
         @JavascriptInterface
         public void savePdfBase64(String dataUri, String requestedName) {
             runOnUiThread(() -> {
