@@ -1,16 +1,3 @@
 plugins {
-    id 'com.android.application'
-}
-
-android {
-    namespace 'vn.dongthap.vkskv5'
-    compileSdk 35
-
-    defaultConfig {
-        applicationId 'vn.dongthap.vkskv5'
-        minSdk 24
-        targetSdk 35
-        versionCode 3
-versionName '2.2.0'
-    }
+    id 'com.android.application' version '8.7.3' apply false
 }
