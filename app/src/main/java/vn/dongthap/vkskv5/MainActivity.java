@@ -30,6 +30,7 @@ import java.io.OutputStream;
 
 public class MainActivity extends Activity {
     private WebView webView;
+    private FrameLayout root;
     private static final String HOME = "file:///android_asset/index.html";
     private static final int FILE_CHOOSER_REQUEST = 1001;
     private ValueCallback<Uri[]> filePathCallback;
@@ -38,7 +39,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        FrameLayout root = new FrameLayout(this);
+        root = new FrameLayout(this);
         root.setBackgroundColor(Color.rgb(244, 247, 251));
         webView = new WebView(this);
         root.addView(webView, new FrameLayout.LayoutParams(
@@ -145,42 +146,68 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> {
                 try {
                     final WebView printView = new WebView(MainActivity.this);
+                    printView.setBackgroundColor(Color.WHITE);
                     WebSettings ps = printView.getSettings();
                     ps.setJavaScriptEnabled(false);
                     ps.setLoadsImagesAutomatically(true);
                     ps.setDefaultTextEncodingName("UTF-8");
+                    ps.setUseWideViewPort(true);
+                    ps.setLoadWithOverviewMode(false);
+
+                    // IMPORTANT: the WebView used for printing must be attached and laid out.
+                    // An unattached WebView can produce a completely blank PDF on Android.
+                    FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT);
+                    root.addView(printView, lp);
+                    printView.setTranslationX(-10000f); // keep it off-screen but still attached/renderable
 
                     printView.setWebViewClient(new WebViewClient() {
                         @Override
                         public void onPageFinished(WebView view, String url) {
                             view.postDelayed(() -> {
                                 try {
+                                    int w = root.getWidth() > 0 ? root.getWidth() : getResources().getDisplayMetrics().widthPixels;
+                                    int h = root.getHeight() > 0 ? root.getHeight() : getResources().getDisplayMetrics().heightPixels;
+                                    printView.measure(
+                                            android.view.View.MeasureSpec.makeMeasureSpec(w, android.view.View.MeasureSpec.EXACTLY),
+                                            android.view.View.MeasureSpec.makeMeasureSpec(h, android.view.View.MeasureSpec.EXACTLY));
+                                    printView.layout(0, 0, w, h);
+
                                     String jobName = requestedName == null ? "So do vu an" : requestedName;
-                                    jobName = jobName.replaceAll("[\\\\/:*?\"<>|]", "").replaceAll("(?i)\\.pdf$", "").trim();
+                                    jobName = jobName.replaceAll("[\\\\/:*?\"<>|]", "")
+                                                     .replaceAll("(?i)\\.pdf$", "")
+                                                     .trim();
                                     if (jobName.isEmpty()) jobName = "So do vu an";
 
                                     PrintManager printManager = (PrintManager) getSystemService(PRINT_SERVICE);
-                                    PrintDocumentAdapter adapter;
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                        adapter = printView.createPrintDocumentAdapter(jobName);
-                                    } else {
-                                        adapter = printView.createPrintDocumentAdapter();
-                                    }
+                                    PrintDocumentAdapter adapter = printView.createPrintDocumentAdapter(jobName);
                                     PrintAttributes attrs = new PrintAttributes.Builder()
                                             .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
                                             .setColorMode(PrintAttributes.COLOR_MODE_COLOR)
                                             .setMinMargins(new PrintAttributes.Margins(300, 300, 300, 300))
                                             .build();
+
                                     printManager.print(jobName, adapter, attrs);
+                                    // Do not remove/destroy printView here: Android's print service
+                                    // continues reading it asynchronously after print() returns.
                                 } catch (Exception e) {
-                                    Toast.makeText(MainActivity.this, "Xuất PDF thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                    Toast.makeText(MainActivity.this,
+                                            "Xuất PDF thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
                                 }
-                            }, 350);
+                            }, 700);
                         }
                     });
-                    printView.loadDataWithBaseURL("https://local.vks/", html, "text/html", "UTF-8", null);
+
+                    printView.loadDataWithBaseURL(
+                            "https://local.vks/",
+                            html,
+                            "text/html",
+                            "UTF-8",
+                            null);
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Xuất PDF thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this,
+                            "Xuất PDF thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
         }
