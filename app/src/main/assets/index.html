@@ -82,8 +82,118 @@ select{width:100%;padding:14px;border:2px solid #d8e5ee;border-radius:12px;backg
 #home .home-hero::before,#home .home-hero::after{display:none!important}
 #home .home-hero>*{display:none!important}
 @media (max-width:480px){#home .home-hero{height:auto;aspect-ratio:1.6/1;background-size:cover;background-position:center center}}
+
+/* Notes v21 - synchronized with current app */
+.home-notes{background:#fff!important}
+.home-notes .ico{background:#fff0c9!important}
+.notes-toolbar{display:flex;gap:9px;margin:14px 0 12px}
+.notes-toolbar input{flex:1;text-align:left;padding-left:13px}
+.notes-new{flex:0 0 auto;border:0;border-radius:12px;padding:0 15px;background:#347fca;color:#fff;font-weight:800;font-size:14px}
+.notes-form textarea{width:100%;min-height:145px;box-sizing:border-box;padding:13px;border:2px solid #d8e5ee;border-radius:12px;background:#fff;font-size:16px;line-height:1.45;font-family:inherit;resize:vertical;outline:none}
+.notes-form textarea:focus{border-color:#5298dc}
+.notes-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.notes-secondary{border:0;border-radius:13px;padding:13px;background:#eef3f7;color:#173a5e;font-weight:800}
+.note-pin-row{display:flex;align-items:center;gap:9px;margin-top:13px;font-weight:700;color:#496278}
+.note-pin-row input{width:21px;height:21px;accent-color:#347fca}
+.notes-list{display:grid;gap:10px;margin-top:12px}
+.note-empty{text-align:center;padding:26px 15px;color:#7a8b9b;background:#f7fafc;border:1px dashed #cedbe5;border-radius:15px}
+.note-item{background:#fff;border:1px solid #e4ecf2;border-radius:15px;padding:14px;box-shadow:0 3px 9px rgba(24,58,88,.04)}
+.note-item.pinned{border-color:#f0cf74;background:#fffdf6}
+.note-top{display:flex;align-items:flex-start;gap:10px}
+.note-title{font-size:16px;font-weight:800;color:#173a5e;line-height:1.25;flex:1;word-break:break-word}
+.note-pin-badge{font-size:12px;background:#fff0c4;border-radius:999px;padding:4px 8px;color:#745710;font-weight:800;white-space:nowrap}
+.note-body{margin-top:9px;color:#445d73;line-height:1.45;white-space:pre-wrap;word-break:break-word;font-size:14px}
+.note-meta{margin-top:10px;font-size:11.5px;color:#8a9aa8}
+.note-buttons{display:flex;gap:8px;margin-top:12px}
+.note-buttons button{flex:1;border:0;border-radius:10px;padding:9px;font-weight:800;font-size:13px}
+.note-edit{background:#e9f4ff;color:#276ba8}
+.note-delete{background:#fff0f0;color:#ae3434}
+
+
+.home-interest{background:#fff!important}
+.home-interest .ico{background:#e8f7e8!important}
+.interest-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.interest-grid .field{min-width:0}
+.interest-grid input{width:100%;box-sizing:border-box}
+.interest-days{background:#f4f8fb!important;color:#173a5e;font-weight:800;text-align:center!important}
+.interest-result{display:grid;gap:10px}
+.interest-line{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid #e8eef3}
+.interest-line:last-child{border-bottom:0}
+.interest-line b:last-child{text-align:right;color:#173a5e}
+.interest-total{font-size:18px}
+.interest-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.interest-clear{border:0;border-radius:13px;padding:14px;background:#eef3f7;color:#173a5e;font-weight:800}
+@media(max-width:420px){.interest-grid{grid-template-columns:1fr 1fr}}
+
+
+/* Saved land parcels v2.1 */
+.land-save-box{margin-top:14px;padding-top:13px;border-top:1px solid #e5edf3}
+.land-save-row{display:flex;gap:8px;align-items:center}
+.land-save-row input{flex:1;min-width:0;text-align:left;padding-left:12px;box-sizing:border-box}
+.land-save-btn{border:0;border-radius:12px;padding:12px 14px;background:#347fca;color:#fff;font-weight:800;white-space:nowrap}
+.land-saved-title{font-weight:800;color:#173a5e;margin:15px 0 8px}
+.land-saved-list{display:grid;gap:8px}
+.land-saved-empty{padding:14px;text-align:center;color:#7a8b9b;background:#f7fafc;border:1px dashed #cedbe5;border-radius:12px;font-size:13px}
+.land-saved-item{background:#f9fbfd;border:1px solid #dfe9f1;border-radius:13px;padding:11px 12px}
+.land-saved-top{display:flex;gap:8px;align-items:flex-start}
+.land-saved-name{flex:1;font-weight:800;color:#173a5e;word-break:break-word}
+.land-saved-meta{font-size:11.5px;color:#7b8c9b;margin-top:4px}
+.land-saved-actions{display:flex;gap:7px;margin-top:9px}
+.land-saved-actions button{flex:1;border:0;border-radius:9px;padding:8px;font-weight:800;font-size:12.5px}
+.land-load{background:#e7f2ff;color:#276ba8}
+.land-delete{background:#fff0f0;color:#ae3434}
+
+
+/* v2.1 FINAL - đồng bộ & màn hình nhỏ */
+button,input,select,textarea{font-family:inherit}
+button{touch-action:manipulation}
+input,select,.calc,.back{min-height:44px}
+.card>p,.card>small{line-height:1.4}
+@media(max-width:360px){
+  .page{padding:14px}
+  .card{padding:15px;border-radius:17px}
+  .hero{padding:24px 14px 20px}
+  .hero h1{font-size:19px}
+  .row{gap:6px}
+  .row input{padding:12px 4px;font-size:15px}
+  .checks.two{grid-template-columns:1fr}
+  .week{grid-template-columns:repeat(3,1fr)}
+  .interest-grid{grid-template-columns:1fr}
+  .interest-actions{gap:7px}
+  .interest-actions button{font-size:12.5px;padding:12px 8px}
+  .landrow{grid-template-columns:30px minmax(0,1fr) minmax(0,1fr);gap:5px}
+  .landrow input{padding:11px 5px;font-size:14px}
+  .land-save-row{flex-direction:column;align-items:stretch}
+  .land-save-btn{width:100%}
+  .law-source{padding:11px 9px}
+  .law-source b{font-size:13px}
+  .law-source span{font-size:11px}
+  .notes-actions{gap:7px}
+  .notes-actions button{font-size:12.5px;padding:12px 7px}
+}
+
+
+/* v2.2 - Sơ đồ vụ việc AI (isolated styles) */
+.home-caseflow{background:#fff!important}.home-caseflow .ico{background:#e8f1ff!important}
+.caseflow-tabs{display:grid;grid-template-columns:1fr 1fr;background:#edf5ff;border-radius:14px;padding:5px;margin-top:12px}
+.caseflow-tab{border:0;background:transparent;border-radius:11px;padding:11px 8px;font-weight:800;color:#173a5e;font-size:15px}
+.caseflow-tab.active{background:#347fca;color:#fff;box-shadow:0 2px 8px rgba(52,127,202,.18)}
+.caseflow-label{font-weight:800;margin:14px 0 7px;color:#173a5e}
+.caseflow-file{width:100%;border:2px solid #d8e5ee;border-radius:12px;padding:10px;background:#fff;font-size:14px}
+.caseflow-keyrow{display:flex;gap:7px;margin-top:8px}.caseflow-keyrow button{flex:1;border:0;border-radius:11px;padding:10px 7px;font-weight:800;font-size:12.5px;background:#eef3f7;color:#173a5e}
+.caseflow-link{display:inline-block;margin-top:7px;color:#347fca;font-size:12.5px;font-weight:800;text-decoration:none}
+.caseflow-source{width:100%;min-height:170px;padding:12px;border:2px solid #d8e5ee;border-radius:12px;background:#fff;font:inherit;font-size:14px;line-height:1.45;resize:vertical;color:#18345a;outline:none}
+.caseflow-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.caseflow-actions button{border:0;border-radius:12px;padding:13px 8px;font-weight:800}.caseflow-test{background:#eef3f7;color:#173a5e}.caseflow-analyze{background:#347fca;color:#fff}
+.caseflow-status{margin-top:10px;font-size:12.5px;font-weight:800;line-height:1.4}.caseflow-status.ok{color:#157347}.caseflow-status.err{color:#b42318}.caseflow-status.busy{color:#9a6700}
+.caseflow-titlebox{border:2px solid #8fc3ff;border-radius:16px;background:linear-gradient(#f9fcff,#eef7ff);padding:11px 12px;margin-bottom:12px}.caseflow-titlelabel{text-align:center;font-size:11px;color:#61758b;font-weight:800;margin-bottom:4px}.caseflow-title{width:100%;min-height:64px;border:0!important;background:transparent!important;padding:0!important;font-size:18px!important;font-weight:900;color:#173a5e;text-align:center!important;line-height:1.35;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;resize:vertical}
+.caseflow-flow{display:grid;gap:0}.caseflow-node{background:#fff;border:2px solid #b9d8ff;border-radius:16px;overflow:hidden}.caseflow-node-head{background:linear-gradient(90deg,#eaf4ff,#dff0ff);display:flex;align-items:center;gap:10px;padding:10px 11px}.caseflow-icon{width:38px;height:38px;border-radius:50%;background:#dbeeff;display:grid;place-items:center;font-size:19px;flex:0 0 38px}.caseflow-node-title{border:0!important;background:transparent!important;text-align:left!important;padding:0!important;min-height:0!important;font-weight:900;color:#173a5e;font-size:15px!important}.caseflow-node-body{padding:9px 11px 10px}.caseflow-content{width:100%;min-height:90px;border:0;background:transparent;padding:0;font:inherit;font-size:13px;line-height:1.45;color:#344f69;resize:vertical;outline:none}.caseflow-tools{display:flex;justify-content:flex-end;gap:5px;margin-top:7px}.caseflow-tools button{border:0;border-radius:8px;padding:6px 8px;font-size:11.5px;font-weight:800;background:#eff5fb;color:#45617d}.caseflow-arrow{height:31px;position:relative}.caseflow-arrow:before{content:"";position:absolute;left:50%;top:2px;transform:translateX(-50%);width:6px;height:17px;background:#4090f4;border-radius:99px}.caseflow-arrow:after{content:"";position:absolute;left:50%;bottom:2px;transform:translateX(-50%);border-left:10px solid transparent;border-right:10px solid transparent;border-top:12px solid #2f80ed}
+.caseflow-bottom{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:12px}.caseflow-bottom button{border:0;border-radius:11px;padding:11px 6px;font-size:12px;font-weight:800}.caseflow-add{background:#347fca;color:#fff}.caseflow-remove,.caseflow-pdf{background:#eef3f7;color:#173a5e}
+.caseflow-note{margin-top:9px;font-size:11.5px;color:#73869a;line-height:1.4;text-align:center}
+.caseflow-pdf-wrap{position:fixed;left:-100000px;top:0;width:190mm;background:#fff;padding:0;z-index:-9999}.caseflow-pdf-wrap .caseflow-tools,.caseflow-pdf-wrap .caseflow-bottom,.caseflow-pdf-wrap .caseflow-note{display:none!important}.caseflow-pdf-wrap input,.caseflow-pdf-wrap textarea{display:none!important}.caseflow-pdftext{white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;line-height:1.45;color:#18345a}.caseflow-pdftitle{text-align:center;font-size:18px;font-weight:900;color:#173a5e;line-height:1.35}.caseflow-pdf-wrap .caseflow-node,.caseflow-pdf-wrap .caseflow-titlebox{box-shadow:none!important;break-inside:avoid!important;page-break-inside:avoid!important}.caseflow-pdf-wrap .caseflow-arrow{break-inside:avoid!important;page-break-inside:avoid!important}
+@media(max-width:360px){.caseflow-actions{grid-template-columns:1fr}.caseflow-keyrow{flex-direction:column}.caseflow-bottom{grid-template-columns:1fr}.caseflow-source{min-height:145px}}
+
 </style>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.11.0/proj4.js"></script><style>#landMap{height:360px;border-radius:14px;margin-top:10px}.mapmode{display:flex;gap:8px;margin-top:14px;background:#eef5fb;padding:5px;border-radius:12px}.mapmode button{flex:1;border:0;border-radius:9px;padding:10px;font-weight:700;background:transparent;color:#52677a}.mapmode button.active{background:#fff;color:#173a5e;box-shadow:0 2px 8px rgba(25,65,100,.12)}.landrow{display:grid;grid-template-columns:35px 1fr 1fr;gap:7px;margin:8px 0}.landrow input{width:100%;box-sizing:border-box}</style></head>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.11.0/proj4.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.9.1/mammoth.browser.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script><style>#landMap{height:360px;border-radius:14px;margin-top:10px}.mapmode{display:flex;gap:8px;margin-top:14px;background:#eef5fb;padding:5px;border-radius:12px}.mapmode button{flex:1;border:0;border-radius:9px;padding:10px;font-weight:700;background:transparent;color:#52677a}.mapmode button.active{background:#fff;color:#173a5e;box-shadow:0 2px 8px rgba(25,65,100,.12)}.landrow{display:grid;grid-template-columns:35px 1fr 1fr;gap:7px;margin:8px 0}.landrow input{width:100%;box-sizing:border-box}</style></head>
 <body><main class="app">
 <section id="home">
 <div class="home-hero">
@@ -94,12 +204,15 @@ select{width:100%;padding:14px;border:2px solid #d8e5ee;border-radius:12px;backg
 <div class="home-page">
   <div class="home-intro"><b>CÔNG CỤ NGHIỆP VỤ</b></div>
   <div class="home-grid">
-    <div class="tool home-age" onclick="showAge()"><div class="ico">🪪</div><b>Tính tuổi</b><small>Năm, tháng, ngày</small><div class="arrow">›</div></div>
-    <div class="tool home-days" onclick="showDays()"><div class="ico">📅</div><b>Đếm ngày</b><small>Khoảng thời gian</small><div class="arrow">›</div></div>
     <div class="tool home-lunar" onclick="showLunar()"><div class="ico">☀️</div><b>Âm – Dương lịch</b><small>Chuyển đổi ngày</small><div class="arrow">›</div></div>
     <div class="tool home-fee" onclick="showFee()"><div class="ico">⚖️</div><b>Án phí dân sự</b><small>Án phí và tạm ứng</small><div class="arrow">›</div></div>
-    <div class="tool home-law" onclick="showLaw()"><div class="ico">🔎</div><b>Tra cứu pháp luật</b><small>Điều luật, văn bản</small><div class="arrow">›</div></div>
     <div class="tool home-land" onclick="showLand()"><div class="ico">🗺️</div><b>Bản đồ thửa đất</b><small>Ranh và diện tích tham khảo</small><div class="arrow">›</div></div>
+    <div class="tool home-days" onclick="showDays()"><div class="ico">📅</div><b>Đếm ngày</b><small>Khoảng thời gian</small><div class="arrow">›</div></div>
+    <div class="tool home-notes" onclick="showNotes()"><div class="ico">📝</div><b>Ghi chú công việc</b><small>Lưu nhanh và ghim ghi chú</small><div class="arrow">›</div></div>
+    <div class="tool home-caseflow" onclick="showCaseFlow()"><div class="ico">🔗</div><b>Sơ đồ vụ việc</b><small>Đọc hồ sơ và tóm tắt theo sơ đồ</small><div class="arrow">›</div></div>
+    <div class="tool home-interest" onclick="showInterest()"><div class="ico">💰</div><b>Tính lãi</b><small>Gốc, lãi suất và thời gian</small><div class="arrow">›</div></div>
+    <div class="tool home-age" onclick="showAge()"><div class="ico">🪪</div><b>Tính tuổi</b><small>Năm, tháng, ngày</small><div class="arrow">›</div></div>
+    <div class="tool home-law" onclick="showLaw()"><div class="ico">🔎</div><b>Tra cứu pháp luật</b><small>Điều luật, văn bản</small><div class="arrow">›</div></div>
   </div>
   <div class="home-footer">VKS Khu vực 5 • Đồng Tháp</div>
 </div>
@@ -111,9 +224,9 @@ select{width:100%;padding:14px;border:2px solid #d8e5ee;border-radius:12px;backg
 <button class="back" onclick="goHome()">← Trang chủ</button>
 <div class="card"><h2>Tính tuổi</h2><small>Nhập ngày tháng năm sinh và ngày cần tính.</small>
 <div class="label">Ngày tháng năm sinh</div>
-<div class="row"><input id="bd" inputmode="numeric" placeholder="Ngày"><input id="bm" inputmode="numeric" placeholder="Tháng"><input id="by" inputmode="numeric" placeholder="Năm"></div>
+<div class="row"><input id="bd" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="Ngày"><input id="bm" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="Tháng"><input id="by" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Năm"></div>
 <div class="label">Đến ngày tháng năm</div>
-<div class="row"><input id="td" inputmode="numeric" placeholder="Ngày"><input id="tm" inputmode="numeric" placeholder="Tháng"><input id="ty" inputmode="numeric" placeholder="Năm"></div>
+<div class="row"><input id="td" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="Ngày"><input id="tm" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="Tháng"><input id="ty" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Năm"></div>
 <button class="calc" onclick="calculate()">TÍNH TUỔI</button><div id="err" class="error"></div>
 <div id="res" class="result"><div class="big" id="ageText"></div></div>
 </div></div></section>
@@ -125,10 +238,10 @@ select{width:100%;padding:14px;border:2px solid #d8e5ee;border-radius:12px;backg
 <div class="card"><h2>Đếm ngày</h2><small>Chọn khoảng thời gian và những ngày không tính.</small>
 
 <div class="label">Từ ngày</div>
-<div class="row"><input id="fd" inputmode="numeric" placeholder="Ngày"><input id="fm" inputmode="numeric" placeholder="Tháng"><input id="fy" inputmode="numeric" placeholder="Năm"></div>
+<div class="row"><input id="fd" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="Ngày"><input id="fm" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="Tháng"><input id="fy" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Năm"></div>
 
 <div class="label">Đến ngày</div>
-<div class="row"><input id="ed" inputmode="numeric" placeholder="Ngày"><input id="em" inputmode="numeric" placeholder="Tháng"><input id="ey" inputmode="numeric" placeholder="Năm"></div>
+<div class="row"><input id="ed" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="Ngày"><input id="em" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="Tháng"><input id="ey" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Năm"></div>
 
 <div class="checks two">
 <label><input type="checkbox" id="incStart"> <span>Tính ngày bắt đầu</span></label>
@@ -162,21 +275,21 @@ select{width:100%;padding:14px;border:2px solid #d8e5ee;border-radius:12px;backg
 <div class="hero"><h1>VIỆN KIỂM SÁT<br>KHU VỰC 5 - ĐỒNG THÁP</h1><p>Công cụ pháp lý phục vụ công việc và người dân</p></div>
 <div class="page"><button class="back" onclick="goHome()">← Trang chủ</button>
 <div class="card">
-<h2>Đổi ngày Dương lịch - Âm lịch</h2>
+<h2>Âm – Dương lịch</h2>
 <p>Nhập một trong hai ngày. Ứng dụng tự tính ngày tương ứng theo lịch Việt Nam (UTC+7).</p>
 
 <div class="label">Ngày Dương lịch</div>
 <div class="row">
-<input id="solarD" inputmode="numeric" placeholder="Ngày" oninput="calInput('solar')">
-<input id="solarM" inputmode="numeric" placeholder="Tháng" oninput="calInput('solar')">
-<input id="solarY" inputmode="numeric" placeholder="Năm" oninput="calInput('solar')">
+<input id="solarD" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="Ngày" oninput="calInput('solar')">
+<input id="solarM" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="Tháng" oninput="calInput('solar')">
+<input id="solarY" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Năm" oninput="calInput('solar')">
 </div>
 
 <div class="label" style="margin-top:18px">Ngày Âm lịch</div>
 <div class="row">
-<input id="lunarD" inputmode="numeric" placeholder="Ngày" oninput="calInput('lunar')">
-<input id="lunarM" inputmode="numeric" placeholder="Tháng" oninput="calInput('lunar')">
-<input id="lunarY" inputmode="numeric" placeholder="Năm" oninput="calInput('lunar')">
+<input id="lunarD" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="Ngày" oninput="calInput('lunar')">
+<input id="lunarM" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="Tháng" oninput="calInput('lunar')">
+<input id="lunarY" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Năm" oninput="calInput('lunar')">
 </div>
 <div id="autoLeapInfo" class="hidden"></div>
 
@@ -204,11 +317,21 @@ select{width:100%;padding:14px;border:2px solid #d8e5ee;border-radius:12px;backg
 <div style="font-weight:700;margin:12px 0 6px">Hệ tọa độ</div><div class="mapmode"><button id="coordGpsBtn" onclick="setCoordMode('gps')">GPS (WGS84)</button><button id="coordVnBtn" class="active" onclick="setCoordMode('vn2000')">VN-2000</button></div>
 <div id="vnOptions"><label style="display:block;font-weight:700;margin:12px 0 6px">Khu vực hồ sơ</label><div class="mapmode"><button id="oldDtBtn" class="active" onclick="setVnRegion('dongthap')">Đồng Tháp cũ</button><button id="oldTgBtn" onclick="setVnRegion('tiengiang')">Tiền Giang cũ</button></div><input id="centralMeridian" type="hidden" value="105"><div class="note" style="margin-top:8px">Chọn khu vực nơi thửa đất thuộc địa bàn trước sáp nhập. App tự áp dụng thông số VN-2000 tương ứng.</div></div>
 <div id="landHead" class="landrow" style="font-size:13px;color:#617485"><span></span><b>X</b><b>Y</b></div><div id="landRows"></div><div style="display:flex;gap:8px;margin-top:8px"><button class="back" style="flex:1;margin:0" onclick="addLandPoint()">+ Thêm mốc</button><button class="back" style="flex:1;margin:0" onclick="removeLandPoint()">− Xóa mốc</button></div>
-<button class="calc" style="width:100%;margin-top:12px" onclick="drawLand()">XEM THỬA ĐẤT</button><div class="mapmode"><button id="mapNormalBtn" class="active" onclick="setLandBase('normal')">🗺️ Bản đồ</button><button id="mapSatelliteBtn" onclick="setLandBase('satellite')">🛰️ Vệ tinh</button></div><div id="landMap"></div><div id="landStats" class="result" style="display:none;margin-top:12px"></div><div class="note">Thông tin bản đồ, ranh giới và số liệu tính toán chỉ có giá trị tham khảo, không thay thế hồ sơ địa chính.</div></div></div></section><section id="law" class="hidden">
+<button class="calc" style="width:100%;margin-top:12px" onclick="drawLand()">XEM THỬA ĐẤT</button><div class="mapmode"><button id="mapNormalBtn" class="active" onclick="setLandBase('normal')">🗺️ Bản đồ</button><button id="mapSatelliteBtn" onclick="setLandBase('satellite')">🛰️ Vệ tinh</button></div><div id="landMap"></div><div id="landStats" class="result" style="display:none;margin-top:12px"></div>
+<div class="land-save-box">
+  <div class="label" style="margin-top:0">Lưu thửa đất</div>
+  <div class="land-save-row">
+    <input id="landSaveName" placeholder="Tên thửa / hồ sơ, ví dụ: Thửa 785">
+    <button class="land-save-btn" onclick="saveCurrentLand()">LƯU THỬA</button>
+  </div>
+  <div class="land-saved-title">Thửa đã lưu</div>
+  <div id="landSavedList" class="land-saved-list"></div>
+</div>
+<div class="note">Thông tin bản đồ, ranh giới và số liệu tính toán chỉ có giá trị tham khảo, không thay thế hồ sơ địa chính.</div></div></div></section><section id="law" class="hidden">
 <div class="hero"><h1>VIỆN KIỂM SÁT<br>KHU VỰC 5 - ĐỒNG THÁP</h1><p>Công cụ pháp lý phục vụ công việc và người dân</p></div>
 <div class="page"><button class="back" onclick="goHome()">← Trang chủ</button>
 <div class="card">
-<h2>Tra cứu điều luật</h2>
+<h2>Tra cứu pháp luật</h2>
 <p>Tra cứu văn bản pháp luật trực tuyến.</p>
 
 <div class="label">Nội dung tìm kiếm</div>
@@ -222,8 +345,9 @@ select{width:100%;padding:14px;border:2px solid #d8e5ee;border-radius:12px;backg
 <button class="law-source" onclick="openLaw('vbpl')"><b>⚖️ VBPL</b><span>CSDL Quốc gia về văn bản pháp luật</span></button>
 <button class="law-source" onclick="openLaw('tvpl')"><b>📚 Thư Viện Pháp Luật</b><span>Tra cứu văn bản và quy định</span></button>
 <button class="law-source" onclick="openLaw('luatvn')"><b>📖 Luật Việt Nam</b><span>Tra cứu văn bản pháp luật</span></button>
+<button class="law-source" onclick="openLaw('phapluat')"><b>🇻🇳 Cổng Pháp luật quốc gia</b><span>Nguồn pháp luật chính thống</span></button>
 <button class="law-source" onclick="openLaw('cp')"><b>🏛️ Văn bản Chính phủ</b><span>Hệ thống văn bản Chính phủ</span></button>
-<button class="law-source wide" onclick="openLaw('congbao')"><b>📰 Công báo điện tử Chính phủ</b><span>Tra cứu và đối chiếu văn bản công bố</span></button>
+<button class="law-source" onclick="openLaw('congbao')"><b>📰 Công báo điện tử Chính phủ</b><span>Tra cứu và đối chiếu văn bản công bố</span></button>
 </div>
 
 <div class="note">Nhập từ khóa một lần rồi chọn Google hoặc nguồn pháp luật cần tra cứu. Khi sử dụng trong nghiệp vụ, cần kiểm tra tình trạng hiệu lực, sửa đổi, bổ sung hoặc thay thế của văn bản.</div>
@@ -234,7 +358,7 @@ select{width:100%;padding:14px;border:2px solid #d8e5ee;border-radius:12px;backg
 <div class="page">
 <button class="back" onclick="goHome()">← Trang chủ</button>
 <div class="card">
-<h2>Tính án phí dân sự</h2>
+<h2>Án phí dân sự</h2>
 <small>Tính án phí và tạm ứng án phí theo thông tin vụ việc.</small>
 
 <div class="label">Cấp xét xử</div>
@@ -259,7 +383,7 @@ select{width:100%;padding:14px;border:2px solid #d8e5ee;border-radius:12px;backg
 
 <div id="valueBox" class="hidden">
 <div class="label">Giá trị tài sản tranh chấp</div>
-<div class="money-wrap"><input id="claimValue" inputmode="numeric" placeholder="Nhập số tiền" oninput="formatMoneyInput(this)"><span class="money-unit">đồng</span></div>
+<div class="money-wrap"><input id="claimValue" inputmode="numeric" placeholder="Nhập số tiền" oninput="formatMoneyInput(this);saveInterestDraft()"><span class="money-unit">đồng</span></div>
 </div>
 </div>
 
@@ -274,6 +398,128 @@ select{width:100%;padding:14px;border:2px solid #d8e5ee;border-radius:12px;backg
 </div>
 <div class="note">Mức tính theo Nghị quyết 326/2016/UBTVQH14. Kết quả dùng để hỗ trợ tra cứu, cần đối chiếu tình huống tố tụng cụ thể.</div>
 </div></div></section>
+
+
+
+
+<section id="caseflow" class="hidden">
+<div class="hero"><h1>VIỆN KIỂM SÁT<br>KHU VỰC 5 - ĐỒNG THÁP</h1><p>Công cụ pháp lý phục vụ công việc và người dân</p></div>
+<div class="page">
+<button class="back" onclick="goHome()">← Trang chủ</button>
+<div class="card">
+<h2>Sơ đồ vụ việc</h2><small>Đọc file Word/TXT, lấy nội dung quan trọng và tạo sơ đồ. Kết quả AI cần được kiểm tra lại trước khi sử dụng.</small>
+<div class="caseflow-tabs">
+<button id="caseCivilBtn" class="caseflow-tab active" onclick="caseSetType('civil')">Dân sự</button>
+<button id="caseCriminalBtn" class="caseflow-tab" onclick="caseSetType('criminal')">Hình sự</button>
+</div>
+<div class="caseflow-label">1. Chọn file Word / TXT</div>
+<input id="caseFile" class="caseflow-file" type="file" accept=".docx,.txt,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+<div class="caseflow-label">2. Gemini API key</div>
+<input id="caseApiKey" type="password" autocomplete="off" placeholder="Dán API key Gemini">
+<a class="caseflow-link" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">🔑 Chưa có key? Mở Google AI Studio để lấy API key</a>
+<div class="caseflow-keyrow"><button onclick="caseSaveKey()">💾 LƯU KEY</button><button onclick="caseClearKey()">🧹 XÓA KEY ĐÃ LƯU</button></div>
+<div class="caseflow-label">3. Nội dung đọc được từ hồ sơ</div>
+<textarea id="caseSource" class="caseflow-source" placeholder="Chọn file Word hoặc dán nội dung hồ sơ vào đây..."></textarea>
+<div class="caseflow-actions"><button class="caseflow-test" onclick="caseTestApi()">KIỂM TRA API</button><button class="caseflow-analyze" onclick="caseAnalyze()">PHÂN TÍCH VÀ TẠO SƠ ĐỒ</button></div>
+<div id="caseStatus" class="caseflow-status"></div>
+</div>
+<div class="card">
+<div class="caseflow-titlebox"><div class="caseflow-titlelabel">TÊN VỤ ÁN</div><textarea id="caseTitle" class="caseflow-title" rows="2">Vụ án dân sự</textarea></div>
+<div id="caseFlow" class="caseflow-flow"></div>
+<div class="caseflow-bottom"><button class="caseflow-add" onclick="caseAddNode()">＋ THÊM Ô</button><button class="caseflow-remove" onclick="caseRemoveNode()">🗑 XÓA Ô CUỐI</button><button class="caseflow-pdf" onclick="caseExportPdf()">📄 XUẤT PDF</button></div>
+<div class="caseflow-note">PDF có thể hiển thị khoảng phân cách giữa các trang trong trình đọc PDF; khoảng này không phải đường kẻ được in vào tài liệu.</div>
+</div>
+</div></section>
+
+<section id="interest" class="hidden">
+<div class="hero"><h1>VIỆN KIỂM SÁT<br>KHU VỰC 5 - ĐỒNG THÁP</h1><p>Công cụ pháp lý phục vụ công việc và người dân</p></div>
+<div class="page">
+<button class="back" onclick="goHome()">← Trang chủ</button>
+
+<div class="card">
+<h2>Tính lãi</h2>
+<small>Ước tính tiền lãi theo số tiền gốc, lãi suất theo tháng và thời gian chậm thanh toán.</small>
+
+<div class="label">Số tiền gốc</div>
+<div class="money-wrap">
+<input id="interestPrincipal" inputmode="numeric" placeholder="Ví dụ: 100.000.000" oninput="formatMoneyInput(this)">
+<span class="money-unit">đồng</span>
+</div>
+
+<div class="label">Lãi suất (%/tháng)</div>
+<input id="interestRate" inputmode="decimal" autocomplete="off" placeholder="" oninput="saveInterestDraft()" style="width:100%;box-sizing:border-box;text-align:left;padding-left:13px">
+
+<div class="label">Thời gian chậm thanh toán</div>
+<div class="interest-grid">
+<div class="field">
+<small style="display:block;margin-bottom:6px">Từ ngày</small>
+<input id="interestFrom" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/yyyy" oninput="formatDateInput(this);updateInterestDays();saveInterestDraft()">
+</div>
+<div class="field">
+<small style="display:block;margin-bottom:6px">Đến ngày</small>
+<input id="interestTo" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/yyyy" oninput="formatDateInput(this);updateInterestDays();saveInterestDraft()">
+</div>
+</div>
+
+<div class="label">Số ngày chậm trả</div>
+<input id="interestDays" class="interest-days" value="0 ngày" readonly>
+
+<div class="interest-actions">
+<button class="interest-clear" onclick="clearInterest()">XÓA NỘI DUNG</button>
+<button class="calc" style="margin:0" onclick="calculateInterest()">TÍNH LÃI</button>
+</div>
+
+<div id="interestErr" class="error"></div>
+
+<div id="interestRes" class="result">
+<div class="interest-result">
+<div class="interest-line"><b>Số ngày</b><b id="interestDaysOut"></b></div>
+<div class="interest-line"><b>Tiền lãi</b><b id="interestAmountOut"></b></div>
+<div class="interest-line interest-total"><b>Tổng gốc + lãi</b><b id="interestTotalOut"></b></div>
+</div>
+<div class="formula" id="interestFormula" style="display:block"></div>
+</div>
+
+<div class="note">Công cụ tính lãi đơn theo lãi suất %/tháng do người dùng nhập, quy đổi 1 tháng = 30 ngày. Kết quả dùng để hỗ trợ tính toán; cần đối chiếu bản án, quyết định và căn cứ pháp luật áp dụng cho từng vụ việc.</div>
+</div>
+</div>
+</section>
+
+<section id="notes" class="hidden">
+<div class="hero"><h1>VIỆN KIỂM SÁT<br>KHU VỰC 5 - ĐỒNG THÁP</h1><p>Công cụ pháp lý phục vụ công việc và người dân</p></div>
+<div class="page">
+<button class="back" onclick="goHome()">← Trang chủ</button>
+
+<div class="card">
+<h2>Ghi chú công việc</h2>
+<small>Ghi nhanh nội dung cần nhớ. Dữ liệu được lưu trên thiết bị này.</small>
+
+
+
+<div class="notes-form">
+<div class="label">Tiêu đề</div>
+<input id="noteTitle" style="text-align:left;padding-left:13px;box-sizing:border-box" placeholder="Ví dụ: Hồ sơ cần kiểm tra">
+
+<div class="label">Nội dung</div>
+<textarea id="noteBody" placeholder="Nhập nội dung ghi chú..."></textarea>
+
+<label class="note-pin-row"><input id="notePinned" type="checkbox"> Ghim ghi chú quan trọng lên đầu</label>
+
+<div class="notes-actions">
+<button class="notes-secondary" onclick="clearNoteForm()">XÓA NỘI DUNG</button>
+<button class="calc" style="margin:0" onclick="saveNote()">LƯU GHI CHÚ</button>
+</div>
+<input id="noteEditId" type="hidden">
+</div>
+</div>
+
+<div class="card">
+<h2 style="margin-bottom:2px">Danh sách ghi chú</h2>
+<small id="noteCountText">0 ghi chú</small>
+<div id="notesList" class="notes-list"></div>
+</div>
+</div>
+</section>
 
 </main>
 <script>
@@ -292,6 +538,7 @@ function openLaw(src){
     vbpl:'vbpl.vn',
     tvpl:'thuvienphapluat.vn',
     luatvn:'luatvietnam.vn',
+    phapluat:'phapluat.gov.vn',
     cp:'vanban.chinhphu.vn',
     congbao:'congbao.chinhphu.vn'
    };
@@ -301,7 +548,7 @@ function openLaw(src){
 }
 
 let landMap,landPoly,landBaseNormal,landBaseSatellite,landBaseMode="normal";
-function showLand(){hidePages();$("land").classList.remove("hidden");if(!$("landRows").children.length)renderLandRows();setTimeout(initLandMap,150)}
+function showLand(){hidePages();$("land").classList.remove("hidden");if(!$("landRows").children.length)renderLandRows();renderSavedLands();setTimeout(initLandMap,150)}
 
 function setLandBase(mode){
  if(!landMap){initLandMap()}
@@ -317,24 +564,37 @@ function setLandBase(mode){
  $("mapNormalBtn").classList.toggle("active",mode==="normal");
  $("mapSatelliteBtn").classList.toggle("active",mode==="satellite");
 }
-let coordMode="vn2000", landPointCount=4;
-function renderLandRows(vals){let box=$("landRows");box.innerHTML="";for(let i=0;i<landPointCount;i++){let v=vals&&vals[i]?vals[i]:["",""];let d=document.createElement("div");d.className="landrow";d.innerHTML=`<b>M${i+1}</b><input id="c1_${i}" value="${v[0]}"><input id="c2_${i}" value="${v[1]}">`;box.appendChild(d)}}
+let coordMode="vn2000", landPointCount=4, vnRegion="dongthap";
+function renderLandRows(vals){let box=$("landRows");box.innerHTML="";for(let i=0;i<landPointCount;i++){let v=vals&&vals[i]?vals[i]:["",""];let d=document.createElement("div");d.className="landrow";d.innerHTML=`<b>M${i+1}</b><input id="c1_${i}" inputmode="decimal" autocomplete="off" value="${v[0]}"><input id="c2_${i}" inputmode="decimal" autocomplete="off" value="${v[1]}">`;box.appendChild(d)}}
 function setCoordMode(m){coordMode=m;$("coordGpsBtn").classList.toggle("active",m==="gps");$("coordVnBtn").classList.toggle("active",m==="vn2000");$("vnOptions").classList.toggle("hidden",m!=="vn2000");$("landHead").children[1].textContent=m==="vn2000"?"X":"Vĩ độ";$("landHead").children[2].textContent=m==="vn2000"?"Y":"Kinh độ";landPointCount=4;renderLandRows();clearLandDrawing()}
-function setVnRegion(r){$("oldDtBtn").classList.toggle("active",r==="dongthap");$("oldTgBtn").classList.toggle("active",r==="tiengiang");$("centralMeridian").value=r==="tiengiang"?"105.75":"105";clearLandDrawing()}
+function setVnRegion(r){vnRegion=r==="tiengiang"?"tiengiang":"dongthap";$("oldDtBtn").classList.toggle("active",vnRegion==="dongthap");$("oldTgBtn").classList.toggle("active",vnRegion==="tiengiang");$("centralMeridian").value=vnRegion==="tiengiang"?"105.75":"105";clearLandDrawing()}
 function addLandPoint(){let v=readLandRaw();landPointCount++;v.push(["",""]);renderLandRows(v)}
 function removeLandPoint(){if(landPointCount<=3)return;let v=readLandRaw();landPointCount--;renderLandRows(v.slice(0,landPointCount))}
 function readLandRaw(){let a=[];for(let i=0;i<landPointCount;i++)a.push([$("c1_"+i).value,$("c2_"+i).value]);return a}
 function vnToGps(X,Y){let lon0=parseFloat($("centralMeridian").value);let src=`+proj=tmerc +lat_0=0 +lon_0=${lon0} +k=0.9999 +x_0=500000 +y_0=0 +ellps=WGS84 +units=m +no_defs`;let z=proj4(src,"EPSG:4326",[Y,X]);return [z[1],z[0]]}
 function landMeasure(P){let R=6371008.8,lat0=P.reduce((a,p)=>a+p[0],0)/P.length*Math.PI/180,xy=P.map(p=>[R*p[1]*Math.PI/180*Math.cos(lat0),R*p[0]*Math.PI/180]);let area=0,per=0;for(let i=0;i<xy.length;i++){let a=xy[i],b=xy[(i+1)%xy.length];area+=a[0]*b[1]-b[0]*a[1];per+=Math.hypot(a[0]-b[0],a[1]-b[1])}return [Math.abs(area)/2,per]}
-function initLandMap(){if(!landMap){landMap=L.map("landMap").setView([10.45,105.63],9);landBaseNormal=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:20,attribution:"© OpenStreetMap"});landBaseSatellite=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:20,attribution:"Tiles © Esri"});landBaseNormal.addTo(landMap)}setTimeout(()=>landMap.invalidateSize(),50)}
+function initLandMap(){if(!landMap){landMap=L.map("landMap",{maxZoom:26}).setView([10.45,105.63],9);landBaseNormal=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxNativeZoom:19,maxZoom:26,attribution:"© OpenStreetMap"});landBaseSatellite=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxNativeZoom:19,maxZoom:26,attribution:"Tiles © Esri"});landBaseNormal.addTo(landMap)}setTimeout(()=>landMap.invalidateSize(),50)}
 function clearLandDrawing(){if(landMap&&landPoly){landMap.removeLayer(landPoly);landPoly=null}if($("landStats"))$("landStats").style.display="none"}
-function drawLand(){let raw=readLandRaw(),P=[];for(let r of raw){let a=parseFloat(String(r[0]).trim().replace(",",".")),b=parseFloat(String(r[1]).trim().replace(",","."));if(!isFinite(a)||!isFinite(b)){alert("Vui lòng nhập đủ tọa độ các mốc.");return}P.push(coordMode==="vn2000"?vnToGps(a,b):[a,b])}initLandMap();if(landPoly)landMap.removeLayer(landPoly);landPoly=L.polygon(P,{weight:3,fillOpacity:.22}).addTo(landMap);landMap.fitBounds(landPoly.getBounds(),{padding:[30,30]});let [area,per]=landMeasure(P);$("landStats").style.display="block";$("landStats").innerHTML=`<b>Diện tích ước tính:</b> ${area.toLocaleString("vi-VN",{maximumFractionDigits:1})} m²<br><b>Chu vi ước tính:</b> ${per.toLocaleString("vi-VN",{maximumFractionDigits:1})} m`;setTimeout(()=>landMap.invalidateSize(),50)}
-function hidePages(){['home','age','days','lunar','fee','law','land'].forEach(id=>$(id).classList.add('hidden'))}
+function drawLand(){let raw=readLandRaw(),P=[];for(let r of raw){let a=parseFloat(String(r[0]).trim().replace(",",".")),b=parseFloat(String(r[1]).trim().replace(",","."));if(!isFinite(a)||!isFinite(b)){alert("Vui lòng nhập đủ tọa độ các mốc.");return}P.push(coordMode==="vn2000"?vnToGps(a,b):[a,b])}initLandMap();if(landPoly)landMap.removeLayer(landPoly);landPoly=L.polygon(P,{weight:3,fillOpacity:.22}).addTo(landMap);
+setTimeout(()=>{
+  landMap.invalidateSize();
+  const bounds=landPoly.getBounds();
+  landMap.setView(bounds.getCenter(),26,{animate:false});
+  setTimeout(()=>{
+    landMap.invalidateSize();
+    landMap.setView(bounds.getCenter(),26,{animate:false});
+  },180);
+},120);
+let [area,per]=landMeasure(P);$("landStats").style.display="block";$("landStats").innerHTML=`<b>Diện tích ước tính:</b> ${area.toLocaleString("vi-VN",{maximumFractionDigits:1})} m²<br><b>Chu vi ước tính:</b> ${per.toLocaleString("vi-VN",{maximumFractionDigits:1})} m`;setTimeout(()=>landMap.invalidateSize(),260)}
+function hidePages(){['home','age','days','lunar','fee','law','land','notes','interest','caseflow'].forEach(id=>$(id).classList.add('hidden'))}
 function showAge(){hidePages();$('age').classList.remove('hidden')}
 function showDays(){hidePages();$('days').classList.remove('hidden')}
 function showLunar(){hidePages();$('lunar').classList.remove('hidden');lunarUI()}
 function showFee(){hidePages();$('fee').classList.remove('hidden');feeUI()}
 function showLaw(){hidePages();$('law').classList.remove('hidden');$('lawErr').style.display='none'}
+function showNotes(){hidePages();$('notes').classList.remove('hidden');renderNotes()}
+function showCaseFlow(){hidePages();$('caseflow').classList.remove('hidden');caseRestoreKey();caseRender()}
+function showInterest(){hidePages();$('interest').classList.remove('hidden');restoreInterestDraft();updateInterestDays()}
 function goHome(){hidePages();$('home').classList.remove('hidden')}
 function dateUTC(y,m,d){return new Date(Date.UTC(y,m-1,d))}
 function valid(y,m,d){let x=dateUTC(y,m,d);return x.getUTCFullYear()==y&&x.getUTCMonth()==m-1&&x.getUTCDate()==d}
@@ -596,5 +856,356 @@ function calculateFee(){
  $('feeFormula').style.display='block';
  $('feeRes').style.display='block';
 }
+
+
+
+/* ===== TÍNH LÃI CHẬM THI HÀNH ÁN ===== */
+function formatDateInput(el){
+ let v=el.value.replace(/\D/g,'').slice(0,8);
+ if(v.length>4) v=v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4);
+ else if(v.length>2) v=v.slice(0,2)+'/'+v.slice(2);
+ el.value=v;
+}
+const INTEREST_DRAFT_KEY='vks_kv5_interest_draft_v1';
+function saveInterestDraft(){
+ try{
+  localStorage.setItem(INTEREST_DRAFT_KEY,JSON.stringify({
+   principal:$('interestPrincipal')?.value||'',
+   principalRaw:$('interestPrincipal')?.dataset.raw||'',
+   rate:$('interestRate')?.value||'',
+   from:$('interestFrom')?.value||'',
+   to:$('interestTo')?.value||''
+  }));
+ }catch(e){}
+}
+function restoreInterestDraft(){
+ try{
+  const d=JSON.parse(localStorage.getItem(INTEREST_DRAFT_KEY)||'null');
+  if(!d)return;
+  if($('interestPrincipal')){
+   $('interestPrincipal').value=d.principal||'';
+   if(d.principalRaw)$('interestPrincipal').dataset.raw=d.principalRaw;
+  }
+  if($('interestRate'))$('interestRate').value=d.rate||'';
+  if($('interestFrom'))$('interestFrom').value=d.from||'';
+  if($('interestTo'))$('interestTo').value=d.to||'';
+ }catch(e){}
+}
+
+function parseDateInput(v){
+ if(!v)return null;
+ let m=v.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+ if(!m)return null;
+ let day=Number(m[1]), month=Number(m[2]), year=Number(m[3]);
+ let d=new Date(year,month-1,day);
+ if(d.getFullYear()!==year || d.getMonth()!==month-1 || d.getDate()!==day)return null;
+ d.setHours(0,0,0,0);
+ return d;
+}
+function getInterestDayCount(){
+ let a=parseDateInput($('interestFrom').value);
+ let b=parseDateInput($('interestTo').value);
+ if(!a||!b)return null;
+ let ms=b.getTime()-a.getTime();
+ if(ms<0)return -1;
+ return Math.round(ms/86400000);
+}
+function updateInterestDays(){
+ let from=$('interestFrom').value.trim(), to=$('interestTo').value.trim();
+ let n=getInterestDayCount();
+ if(!from && !to){$('interestDays').value='0 ngày';return}
+ if((from && from.length<10)||(to && to.length<10)){ $('interestDays').value='Chưa đủ ngày'; return }
+ $('interestDays').value=(n===null?'Ngày không hợp lệ':n<0?'Ngày không hợp lệ':n+' ngày');
+}
+function clearInterest(){
+ $('interestPrincipal').value='';
+ $('interestPrincipal').dataset.raw='';
+ $('interestRate').value='';
+ $('interestFrom').value='';
+ $('interestTo').value='';
+ $('interestDays').value='0 ngày';
+ try{localStorage.removeItem(INTEREST_DRAFT_KEY);}catch(e){}
+ $('interestErr').style.display='none';
+ $('interestRes').style.display='none';
+}
+function calculateInterest(){
+ let err=$('interestErr');
+ err.style.display='none';
+ $('interestRes').style.display='none';
+
+ let raw=$('interestPrincipal').dataset.raw || $('interestPrincipal').value.replace(/\D/g,'');
+ let principal=Number(raw);
+ let rate=Number(String($('interestRate').value).trim().replace(',','.'));
+ let days=getInterestDayCount();
+
+ if(!isFinite(principal)||principal<=0){
+  err.textContent='Vui lòng nhập số tiền gốc hợp lệ.';
+  err.style.display='block'; return;
+ }
+ if(!isFinite(rate)||rate<0){
+  err.textContent='Vui lòng nhập lãi suất hợp lệ.';
+  err.style.display='block'; return;
+ }
+ if(days===null){
+  err.textContent='Vui lòng nhập đầy đủ Từ ngày và Đến ngày theo dạng dd/mm/yyyy.';
+  err.style.display='block'; return;
+ }
+ if(days<0){
+  err.textContent='Đến ngày phải bằng hoặc sau Từ ngày.';
+  err.style.display='block'; return;
+ }
+
+ saveInterestDraft();
+ let interest=principal*(rate/100)*(days/30);
+ let total=principal+interest;
+
+ $('interestDaysOut').textContent=days.toLocaleString('vi-VN')+' ngày';
+ $('interestAmountOut').textContent=money(interest);
+ $('interestTotalOut').textContent=money(total);
+ $('interestFormula').textContent=`Công thức: ${money(principal)} × ${String(rate).replace('.',',')}%/tháng × ${days} / 30`;
+ $('interestRes').style.display='block';
+ updateInterestDays();
+}
+
+/* ===== GHI CHÚ CÔNG VIỆC ===== */
+const NOTE_STORAGE_KEY='vks_kv5_work_notes_v1';
+
+function getNotes(){
+ try{
+  const x=JSON.parse(localStorage.getItem(NOTE_STORAGE_KEY)||'[]');
+  return Array.isArray(x)?x:[];
+ }catch(e){return []}
+}
+function putNotes(list){
+ try{localStorage.setItem(NOTE_STORAGE_KEY,JSON.stringify(list));}
+ catch(e){alert('Không thể lưu ghi chú trên thiết bị này.');}
+}
+function noteEsc(s){
+ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function noteDate(ts){
+ try{
+  return new Date(ts).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit',year:'numeric'});
+ }catch(e){return ''}
+}
+function clearNoteForm(){
+ $('noteEditId').value='';
+ $('noteTitle').value='';
+ $('noteBody').value='';
+ $('notePinned').checked=false;
+}
+function newNote(){
+ clearNoteForm();
+ $('noteTitle').focus();
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function saveNote(){
+ let title=$('noteTitle').value.trim();
+ let body=$('noteBody').value.trim();
+ if(!title && !body){alert('Vui lòng nhập tiêu đề hoặc nội dung ghi chú.');return}
+ let list=getNotes(), editId=$('noteEditId').value;
+ if(editId){
+  let n=list.find(x=>String(x.id)===String(editId));
+  if(n){n.title=title||'Ghi chú';n.body=body;n.pinned=$('notePinned').checked;n.updatedAt=Date.now();}
+ }else{
+  list.unshift({
+   id:Date.now(),
+   title:title||'Ghi chú',
+   body:body,
+   pinned:$('notePinned').checked,
+   createdAt:Date.now(),
+   updatedAt:Date.now()
+  });
+ }
+ putNotes(list);
+ clearNoteForm();
+ renderNotes();
+}
+function editNote(id){
+ let n=getNotes().find(x=>String(x.id)===String(id)); if(!n)return;
+ $('noteEditId').value=n.id;
+ $('noteTitle').value=n.title||'';
+ $('noteBody').value=n.body||'';
+ $('notePinned').checked=!!n.pinned;
+ window.scrollTo({top:0,behavior:'smooth'});
+ setTimeout(()=>$('noteTitle').focus(),150);
+}
+function deleteNote(id){
+ if(!confirm('Xóa ghi chú này?'))return;
+ let list=getNotes().filter(x=>String(x.id)!==String(id));
+ putNotes(list);renderNotes();
+}
+function renderNotes(){
+ if(!$('notesList'))return;
+ let list=getNotes(), q=($('noteSearch')?.value||'').trim().toLowerCase();
+ list.sort((a,b)=>(Number(!!b.pinned)-Number(!!a.pinned))||((b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0)));
+ if(q)list=list.filter(n=>((n.title||'')+' '+(n.body||'')).toLowerCase().includes(q));
+ $('noteCountText').textContent=`${list.length} ghi chú`;
+ if(!list.length){
+  $('notesList').innerHTML='<div class="note-empty">'+(q?'Không tìm thấy ghi chú phù hợp.':'Chưa có ghi chú. Bấm “+ Mới” để tạo ghi chú đầu tiên.')+'</div>';
+  return;
+ }
+ $('notesList').innerHTML=list.map(n=>`
+  <div class="note-item ${n.pinned?'pinned':''}">
+   <div class="note-top">
+    <div class="note-title">${noteEsc(n.title||'Ghi chú')}</div>
+    ${n.pinned?'<div class="note-pin-badge">📌 Đã ghim</div>':''}
+   </div>
+   ${n.body?`<div class="note-body">${noteEsc(n.body)}</div>`:''}
+   <div class="note-meta">Cập nhật: ${noteDate(n.updatedAt||n.createdAt)}</div>
+   <div class="note-buttons">
+    <button class="note-edit" onclick="editNote('${n.id}')">✏️ Sửa</button>
+    <button class="note-delete" onclick="deleteNote('${n.id}')">🗑️ Xóa</button>
+   </div>
+  </div>`).join('');
+}
+
+
+/* ===== LƯU THỬA ĐẤT ===== */
+const LAND_STORAGE_KEY='vks_kv5_saved_land_parcels_v1';
+
+function getSavedLands(){
+ try{
+  const x=JSON.parse(localStorage.getItem(LAND_STORAGE_KEY)||'[]');
+  return Array.isArray(x)?x:[];
+ }catch(e){return []}
+}
+function putSavedLands(list){
+ try{localStorage.setItem(LAND_STORAGE_KEY,JSON.stringify(list));}
+ catch(e){alert('Không thể lưu thửa đất trên thiết bị này.');}
+}
+function landEsc(s){
+ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function landSavedDate(ts){
+ try{return new Date(ts).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit',year:'numeric'});}
+ catch(e){return ''}
+}
+function validateLandRaw(raw){
+ if(!raw || raw.length<3)return false;
+ return raw.every(r=>{
+  let a=parseFloat(String(r[0]).trim().replace(',','.'));
+  let b=parseFloat(String(r[1]).trim().replace(',','.'));
+  return isFinite(a)&&isFinite(b);
+ });
+}
+function saveCurrentLand(){
+ let raw=readLandRaw();
+ if(!validateLandRaw(raw)){
+  alert('Vui lòng nhập đủ tọa độ các mốc trước khi lưu.');
+  return;
+ }
+ let name=$('landSaveName').value.trim();
+ if(!name) name='Thửa đất '+new Date().toLocaleDateString('vi-VN');
+
+ let list=getSavedLands();
+ list.unshift({
+  id:Date.now(),
+  name,
+  coordMode,
+  vnRegion,
+  centralMeridian:$('centralMeridian')?.value||'105',
+  pointCount:landPointCount,
+  coords:raw,
+  savedAt:Date.now()
+ });
+ putSavedLands(list.slice(0,30));
+ $('landSaveName').value='';
+ renderSavedLands();
+}
+function loadSavedLand(id){
+ let item=getSavedLands().find(x=>String(x.id)===String(id));
+ if(!item)return;
+
+ if(item.coordMode==='gps') setCoordMode('gps');
+ else setCoordMode('vn2000');
+
+ if(item.coordMode!=='gps'){
+  setVnRegion(item.vnRegion==='tiengiang'?'tiengiang':'dongthap');
+ }
+
+ landPointCount=Math.max(3,Number(item.pointCount)||((item.coords||[]).length)||4);
+ renderLandRows(item.coords||[]);
+ clearLandDrawing();
+
+ setTimeout(()=>{
+  drawLand();
+  window.scrollTo({top:0,behavior:'smooth'});
+ },100);
+}
+function deleteSavedLand(id){
+ if(!confirm('Xóa thửa đất đã lưu này?'))return;
+ let list=getSavedLands().filter(x=>String(x.id)!==String(id));
+ putSavedLands(list);
+ renderSavedLands();
+}
+function renderSavedLands(){
+ if(!$('landSavedList'))return;
+ let list=getSavedLands();
+ if(!list.length){
+  $('landSavedList').innerHTML='<div class="land-saved-empty">Chưa có thửa đất nào được lưu.</div>';
+  return;
+ }
+ $('landSavedList').innerHTML=list.map(x=>{
+   let region=x.coordMode==='gps'?'GPS (WGS84)':(x.vnRegion==='tiengiang'?'VN-2000 · Tiền Giang cũ':'VN-2000 · Đồng Tháp cũ');
+   let pts=(x.coords||[]).length;
+   return `<div class="land-saved-item">
+     <div class="land-saved-top">
+       <div class="land-saved-name">${landEsc(x.name||'Thửa đất')}</div>
+     </div>
+     <div class="land-saved-meta">${region} · ${pts} mốc · ${landSavedDate(x.savedAt)}</div>
+     <div class="land-saved-actions">
+       <button class="land-load" onclick="loadSavedLand('${x.id}')">📍 MỞ THỬA</button>
+       <button class="land-delete" onclick="deleteSavedLand('${x.id}')">🗑️ XÓA</button>
+     </div>
+   </div>`;
+ }).join('');
+}
+
+
+
+// ===== v2.2 SƠ ĐỒ VỤ VIỆC AI - isolated module =====
+const CASE_API_KEY_STORAGE='vks_kv5_gemini_api_key_v1';
+let caseType='civil', caseModelList=[];
+const CASE_ICONS=['👥','📘','📁','💡','🧩'];
+const CASE_DEFAULTS={
+ civil:[
+  {title:'Thông tin đương sự',content:''},
+  {title:'Nội dung vụ án',content:''},
+  {title:'Chứng cứ chứng minh',content:''},
+  {title:'Đề xuất của KSV',content:''}
+ ],
+ criminal:[
+  {title:'Bị can / Bị cáo',content:''},
+  {title:'Hành vi / diễn biến chính',content:''},
+  {title:'Chứng cứ chính',content:''},
+  {title:'Đề xuất xử lý',content:''}
+ ]
+};
+let caseNodes=JSON.parse(JSON.stringify(CASE_DEFAULTS.civil));
+function caseStatus(t,c=''){let el=$('caseStatus');if(!el)return;el.textContent=t;el.className='caseflow-status '+c}
+function caseEscFile(s){let n=(s||'so-do-vu-an').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,' ').trim();if(!n)n='so-do-vu-an';return n.slice(0,120)+'.pdf'}
+function caseRestoreKey(){try{let k=localStorage.getItem(CASE_API_KEY_STORAGE)||'';if(k&&$('caseApiKey'))$('caseApiKey').value=k}catch(e){}}
+function caseSaveKey(){let k=$('caseApiKey').value.trim();if(!k)return caseStatus('Chưa có API key để lưu.','err');try{localStorage.setItem(CASE_API_KEY_STORAGE,k);caseStatus('Đã lưu API key trên thiết bị này.','ok')}catch(e){caseStatus('Không lưu được API key: '+e.message,'err')}}
+function caseClearKey(){try{localStorage.removeItem(CASE_API_KEY_STORAGE)}catch(e){}$('caseApiKey').value='';caseStatus('Đã xóa API key đã lưu.','ok')}
+function caseSetType(t){caseType=t==='criminal'?'criminal':'civil';$('caseCivilBtn').classList.toggle('active',caseType==='civil');$('caseCriminalBtn').classList.toggle('active',caseType==='criminal');caseNodes=JSON.parse(JSON.stringify(CASE_DEFAULTS[caseType]));$('caseTitle').value=caseType==='civil'?'Vụ án dân sự':'Vụ án hình sự';caseRender()}
+function caseMove(i,d){let j=i+d;if(j<0||j>=caseNodes.length)return;[caseNodes[i],caseNodes[j]]=[caseNodes[j],caseNodes[i]];caseRender()}
+function caseDeleteNode(i){caseNodes.splice(i,1);caseRender()}
+function caseAddNode(){caseNodes.push({title:'Ô mới',content:''});caseRender()}
+function caseRemoveNode(){if(caseNodes.length>1){caseNodes.pop();caseRender()}}
+function caseRender(){let flow=$('caseFlow');if(!flow)return;flow.innerHTML='';caseNodes.forEach((n,i)=>{let node=document.createElement('div');node.className='caseflow-node';node.innerHTML=`<div class="caseflow-node-head"><div class="caseflow-icon">${CASE_ICONS[Math.min(i,CASE_ICONS.length-1)]}</div><input class="caseflow-node-title"></div><div class="caseflow-node-body"><textarea class="caseflow-content"></textarea><div class="caseflow-tools"><button onclick="caseMove(${i},-1)">↑ Lên</button><button onclick="caseMove(${i},1)">↓ Xuống</button><button onclick="caseDeleteNode(${i})">Xóa</button></div></div>`;let ti=node.querySelector('.caseflow-node-title'),co=node.querySelector('.caseflow-content');ti.value=n.title;co.value=n.content;ti.oninput=e=>caseNodes[i].title=e.target.value;co.oninput=e=>caseNodes[i].content=e.target.value;flow.appendChild(node);if(i<caseNodes.length-1){let a=document.createElement('div');a.className='caseflow-arrow';flow.appendChild(a)}})}
+async function caseReadFile(file){if(!file)return;caseStatus('Đang đọc file...','busy');try{if(file.name.toLowerCase().endsWith('.docx')){if(!window.mammoth)throw new Error('Chưa tải được thư viện đọc Word. Kiểm tra Internet.');let ab=await file.arrayBuffer();let r=await mammoth.extractRawText({arrayBuffer:ab});$('caseSource').value=r.value.trim()}else{$('caseSource').value=await file.text()}caseStatus('Đã đọc file.','ok')}catch(e){caseStatus('Không đọc được file: '+e.message,'err')}}
+async function caseListModels(key){let r=await fetch('https://generativelanguage.googleapis.com/v1beta/models',{headers:{'x-goog-api-key':key}}),raw=await r.text();if(!r.ok)throw new Error('API lỗi '+r.status+': '+raw.slice(0,180));let j=JSON.parse(raw);return (j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>(m.name||'').replace(/^models\//,'')).filter(n=>/gemini/i.test(n)&&!/image|tts|live/i.test(n))}
+function caseOrderModels(names){let pref=['gemini-3.8-flash','gemini-3.5-flash','gemini-3.5-flash-lite','gemini-2.5-flash','gemini-2.5-flash-lite','gemini-2.0-flash'],out=[];pref.forEach(x=>{if(names.includes(x)&&!out.includes(x))out.push(x)});names.filter(x=>/flash/i.test(x)).forEach(x=>{if(!out.includes(x))out.push(x)});names.forEach(x=>{if(!out.includes(x))out.push(x)});return out}
+async function caseTestApi(){let key=$('caseApiKey').value.trim();if(!key)return caseStatus('Chưa dán API key.','err');caseStatus('Đang kiểm tra API...','busy');try{caseModelList=caseOrderModels(await caseListModels(key));if(!caseModelList.length)throw new Error('Không có model Gemini phù hợp.');caseStatus('API hoạt động. Có '+caseModelList.length+' model khả dụng.','ok')}catch(e){caseStatus(e.message,'err')}}
+function casePrompt(text){if(caseType==='civil')return `Bạn là công cụ trích xuất dữ kiện từ hồ sơ vụ án dân sự Việt Nam.\n\nCHỈ DÙNG DỮ LIỆU CÓ TRONG VĂN BẢN NGUỒN. Không bịa. Không tự thêm kiến thức ngoài hồ sơ. Chỉ lấy nội dung quan trọng, viết ngắn gọn, bỏ câu chữ hành chính và phần trùng lặp.\n\nTạo "case_title" theo mẫu: "Vụ án [quan hệ tranh chấp] giữa nguyên đơn [tên] và bị đơn [tên]". Nếu thiếu dữ liệu thì rút gọn theo dữ liệu có thật, không bịa.\n\nTrả JSON đúng cấu trúc:\n{"case_title":"...","nodes":[{"title":"Thông tin đương sự","content":"- Nguyên đơn: ...\\n- Bị đơn: ...\\n- Người có quyền lợi, nghĩa vụ liên quan: ..."},{"title":"Nội dung vụ án","content":"- Yêu cầu khởi kiện của nguyên đơn: ...\\n- Đơn phản tố hoặc trình bày của bị đơn: ...\\n- Yêu cầu độc lập của người liên quan: ..."},{"title":"Chứng cứ chứng minh","content":"- Chứng cứ của nguyên đơn: ...\\n- Chứng cứ của bị đơn: ...\\n- Chứng cứ của người liên quan: ..."},{"title":"Đề xuất của KSV","content":"..."}]}\n\nNếu một mục không có dữ liệu trong hồ sơ thì ghi "Không thấy thông tin trong hồ sơ" thay vì suy đoán.\n\nVĂN BẢN NGUỒN:\n---BEGIN---\n${text}\n---END---`;
+return `Bạn là công cụ trích xuất dữ kiện từ hồ sơ vụ án hình sự Việt Nam. Chỉ dùng dữ liệu có trong văn bản nguồn. Không bịa. Chỉ lấy nội dung quan trọng.\n\nTạo "case_title" theo mẫu: "Vụ án [tội danh] - Bị can [họ tên]". Nếu hồ sơ dùng "Bị cáo" thì dùng "Bị cáo".\n\nTrả JSON đúng cấu trúc: {"case_title":"...","nodes":[{"title":"Bị can / Bị cáo","content":"..."},{"title":"Hành vi / diễn biến chính","content":"..."},{"title":"Chứng cứ chính","content":"..."},{"title":"Đề xuất xử lý","content":"..."}]}\n\nVĂN BẢN NGUỒN:\n---BEGIN---\n${text}\n---END---`}
+async function caseAskModel(key,model,prompt){let r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{temperature:0,responseMimeType:'application/json'}})}),raw=await r.text();if(!r.ok){let e=new Error(raw.slice(0,250));e.status=r.status;throw e}let j=JSON.parse(raw),out=j?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';return JSON.parse(out.replace(/^```json\s*/i,'').replace(/```$/,'').trim())}
+async function caseAnalyze(){let key=$('caseApiKey').value.trim(),src=$('caseSource').value.trim();if(!key)return caseStatus('Chưa dán API key.','err');if(!src)return caseStatus('Chưa có nội dung hồ sơ.','err');caseStatus('AI đang đọc hồ sơ...','busy');try{if(!caseModelList.length)caseModelList=caseOrderModels(await caseListModels(key));let last=null,data=null,used='';for(let i=0;i<caseModelList.length;i++){let m=caseModelList[i];caseStatus(`Đang thử model ${i+1}/${caseModelList.length}: ${m}`,'busy');try{data=await caseAskModel(key,m,casePrompt(src));used=m;break}catch(e){last=e;if(![429,500,502,503,504].includes(e.status))throw e}}if(!data)throw last||new Error('Không có model khả dụng.');$('caseTitle').value=String(data.case_title||(caseType==='civil'?'Vụ án dân sự':'Vụ án hình sự')).trim();let arr=Array.isArray(data.nodes)?data.nodes:[];caseNodes=CASE_DEFAULTS[caseType].map((d,i)=>({title:String(arr[i]?.title||d.title),content:String(arr[i]?.content||'').trim()}));caseRender();caseStatus('Đã tạo sơ đồ bằng '+used+'. Hãy kiểm tra lại nội dung trước khi sử dụng.','ok')}catch(e){caseStatus('Phân tích thất bại: '+e.message,'err')}}
+async function caseExportPdf(){if(!window.html2pdf)return caseStatus('Chưa tải được thư viện xuất PDF. Kiểm tra Internet rồi thử lại.','err');caseStatus('Đang tạo PDF...','busy');let holder=null;try{let card=$('caseFlow').parentElement.cloneNode(true);card.querySelectorAll('.caseflow-bottom,.caseflow-tools,.caseflow-note').forEach(x=>x.remove());let original=$('caseFlow').parentElement,srcFields=[...original.querySelectorAll('input,textarea')],cloneFields=[...card.querySelectorAll('input,textarea')];cloneFields.forEach((el,i)=>{let d=document.createElement('div');d.className='caseflow-pdftext';d.textContent=(srcFields[i]?.value||'').trim();if(el.classList.contains('caseflow-title'))d.classList.add('caseflow-pdftitle');else if(el.classList.contains('caseflow-node-title')){d.style.fontSize='15px';d.style.fontWeight='900';d.style.color='#173a5e'}else if(el.classList.contains('caseflow-content'))d.style.fontSize='12.5px';el.replaceWith(d)});holder=document.createElement('div');holder.className='caseflow-pdf-wrap';holder.appendChild(card);document.body.appendChild(holder);await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));let filename=caseEscFile($('caseTitle').value),opt={margin:[8,8,8,8],filename,image:{type:'jpeg',quality:.97},html2canvas:{scale:2,useCORS:true,backgroundColor:'#fff',logging:false,scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy'],avoid:['.caseflow-node','.caseflow-titlebox']}};let worker=html2pdf().set(opt).from(holder);if(window.AndroidFile&&AndroidFile.savePdfBase64){let dataUri=await worker.outputPdf('datauristring');AndroidFile.savePdfBase64(dataUri,filename);caseStatus('Đã tạo PDF và lưu vào thư mục Tải xuống.','ok')}else{await worker.save();caseStatus('Đã xuất PDF.','ok')}}catch(e){caseStatus('Xuất PDF lỗi: '+e.message,'err')}finally{if(holder)holder.remove()}}
+
+if(document.getElementById('caseFile'))document.getElementById('caseFile').addEventListener('change',e=>caseReadFile(e.target.files&&e.target.files[0]));
+caseRestoreKey();caseRender();
+// ===== END SƠ ĐỒ VỤ VIỆC AI =====
 
 renderLandRows();</script></body></html>
