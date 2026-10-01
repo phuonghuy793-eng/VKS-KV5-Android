@@ -461,8 +461,8 @@ input,select,.calc,.back{min-height:44px}
 </div>
 </div>
 
-<div class="label">Số ngày chậm trả</div>
-<input id="interestDays" class="interest-days" value="0 ngày" readonly>
+<div class="label">Thời gian tính lãi</div>
+<input id="interestDays" class="interest-days" value="0 tháng 0 ngày" readonly>
 
 <div class="interest-actions">
 <button class="interest-clear" onclick="clearInterest()">XÓA NỘI DUNG</button>
@@ -473,14 +473,14 @@ input,select,.calc,.back{min-height:44px}
 
 <div id="interestRes" class="result">
 <div class="interest-result">
-<div class="interest-line"><b>Số ngày</b><b id="interestDaysOut"></b></div>
+<div class="interest-line"><b>Thời gian</b><b id="interestDaysOut"></b></div>
 <div class="interest-line"><b>Tiền lãi</b><b id="interestAmountOut"></b></div>
 <div class="interest-line interest-total"><b>Tổng gốc + lãi</b><b id="interestTotalOut"></b></div>
 </div>
 <div class="formula" id="interestFormula" style="display:block"></div>
 </div>
 
-<div class="note">Công cụ tính lãi đơn theo lãi suất %/tháng do người dùng nhập, quy đổi 1 tháng = 30 ngày. Kết quả dùng để hỗ trợ tính toán; cần đối chiếu bản án, quyết định và căn cứ pháp luật áp dụng cho từng vụ việc.</div>
+<div class="note">Công cụ tính lãi đơn theo lãi suất %/tháng do người dùng nhập. Thời gian được tính theo tháng lịch tròn và số ngày lẻ; riêng phần ngày lẻ được quy đổi theo 30 ngày/tháng. Kết quả dùng để hỗ trợ tính toán; cần đối chiếu bản án, quyết định và căn cứ pháp luật áp dụng cho từng vụ việc.</div>
 </div>
 </div>
 </section>
@@ -905,20 +905,41 @@ function parseDateInput(v){
  d.setHours(0,0,0,0);
  return d;
 }
-function getInterestDayCount(){
+function getInterestPeriod(){
  let a=parseDateInput($('interestFrom').value);
  let b=parseDateInput($('interestTo').value);
  if(!a||!b)return null;
- let ms=b.getTime()-a.getTime();
- if(ms<0)return -1;
- return Math.round(ms/86400000);
+ if(b.getTime()<a.getTime())return {invalid:true};
+
+ // Tính tháng lịch tròn: ví dụ 02/02/2026 -> 02/03/2026 = 1 tháng.
+ let months=(b.getFullYear()-a.getFullYear())*12+(b.getMonth()-a.getMonth());
+ let anchor=new Date(a.getFullYear(),a.getMonth()+months,a.getDate());
+ // JS có thể tràn ngày với các ngày cuối tháng; lùi tháng đến khi mốc không vượt ngày kết thúc.
+ while(anchor.getTime()>b.getTime() && months>0){
+  months--;
+  anchor=new Date(a.getFullYear(),a.getMonth()+months,a.getDate());
+ }
+ let days=Math.round((b.getTime()-anchor.getTime())/86400000);
+ let totalDays=Math.round((b.getTime()-a.getTime())/86400000);
+ return {months,days,totalDays};
+}
+function getInterestDayCount(){
+ let p=getInterestPeriod();
+ if(!p)return null;
+ if(p.invalid)return -1;
+ return p.totalDays;
+}
+function interestPeriodText(p,includeTotal=false){
+ if(!p||p.invalid)return 'Ngày không hợp lệ';
+ let t=`${p.months} tháng ${p.days} ngày`;
+ return includeTotal ? `${t} (${p.totalDays.toLocaleString('vi-VN')} ngày)` : t;
 }
 function updateInterestDays(){
  let from=$('interestFrom').value.trim(), to=$('interestTo').value.trim();
- let n=getInterestDayCount();
- if(!from && !to){$('interestDays').value='0 ngày';return}
+ let p=getInterestPeriod();
+ if(!from && !to){$('interestDays').value='0 tháng 0 ngày';return}
  if((from && from.length<10)||(to && to.length<10)){ $('interestDays').value='Chưa đủ ngày'; return }
- $('interestDays').value=(n===null?'Ngày không hợp lệ':n<0?'Ngày không hợp lệ':n+' ngày');
+ $('interestDays').value=(p===null||p.invalid?'Ngày không hợp lệ':interestPeriodText(p,true));
 }
 function clearInterest(){
  $('interestPrincipal').value='';
@@ -926,7 +947,7 @@ function clearInterest(){
  $('interestRate').value='';
  $('interestFrom').value='';
  $('interestTo').value='';
- $('interestDays').value='0 ngày';
+ $('interestDays').value='0 tháng 0 ngày';
  try{localStorage.removeItem(INTEREST_DRAFT_KEY);}catch(e){}
  $('interestErr').style.display='none';
  $('interestRes').style.display='none';
@@ -939,7 +960,7 @@ function calculateInterest(){
  let raw=$('interestPrincipal').dataset.raw || $('interestPrincipal').value.replace(/\D/g,'');
  let principal=Number(raw);
  let rate=Number(String($('interestRate').value).trim().replace(',','.'));
- let days=getInterestDayCount();
+ let period=getInterestPeriod();
 
  if(!isFinite(principal)||principal<=0){
   err.textContent='Vui lòng nhập số tiền gốc hợp lệ.';
@@ -949,23 +970,30 @@ function calculateInterest(){
   err.textContent='Vui lòng nhập lãi suất hợp lệ.';
   err.style.display='block'; return;
  }
- if(days===null){
+ if(period===null){
   err.textContent='Vui lòng nhập đầy đủ Từ ngày và Đến ngày theo dạng dd/mm/yyyy.';
   err.style.display='block'; return;
  }
- if(days<0){
+ if(period.invalid){
   err.textContent='Đến ngày phải bằng hoặc sau Từ ngày.';
   err.style.display='block'; return;
  }
 
  saveInterestDraft();
- let interest=principal*(rate/100)*(days/30);
+ let monthInterest=principal*(rate/100)*period.months;
+ let dayInterest=principal*(rate/100)*(period.days/30);
+ let interest=monthInterest+dayInterest;
  let total=principal+interest;
 
- $('interestDaysOut').textContent=days.toLocaleString('vi-VN')+' ngày';
+ $('interestDaysOut').textContent=interestPeriodText(period,true);
  $('interestAmountOut').textContent=money(interest);
  $('interestTotalOut').textContent=money(total);
- $('interestFormula').textContent=`Công thức: ${money(principal)} × ${String(rate).replace('.',',')}%/tháng × ${days} / 30`;
+ let rateText=String(rate).replace('.',',');
+ if(period.days>0){
+  $('interestFormula').textContent=`Công thức: ${money(principal)} × ${rateText}%/tháng × ${period.months} tháng + ${money(principal)} × ${rateText}%/tháng × ${period.days}/30 ngày`;
+ }else{
+  $('interestFormula').textContent=`Công thức: ${money(principal)} × ${rateText}%/tháng × ${period.months} tháng`;
+ }
  $('interestRes').style.display='block';
  updateInterestDays();
 }
