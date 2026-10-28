@@ -14,3 +14,6 @@ android {
         versionName '2.2.3'
     }
 }
+dependencies {
+    implementation 'com.google.ar:core:1.56.0'
+}
