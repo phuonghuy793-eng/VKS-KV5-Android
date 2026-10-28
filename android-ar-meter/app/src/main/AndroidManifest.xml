@@ -4,7 +4,7 @@
   <uses-feature android:name="android.hardware.camera" android:required="true"/>
   <uses-feature android:name="android.hardware.camera.ar" android:required="true"/>
   <uses-feature android:glEsVersion="0x00020000" android:required="true"/>
-  <application android:label="Thước đo AR - VKS V3"
+  <application android:label="Thước đo AR - VKS V4"
     android:icon="@android:drawable/ic_menu_crop"
     android:allowBackup="false" android:usesCleartextTraffic="false"
     android:theme="@android:style/Theme.Material.Light.NoActionBar">

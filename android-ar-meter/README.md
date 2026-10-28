@@ -1,14 +1,10 @@
-# Thước đo AR – VKS (Android native)
+# Thước đo AR – VKS V4 · Đa vật thể
 
-Dự án ứng dụng đo khoảng cách hai điểm trên camera bằng ARCore trực tiếp (Android Java + OpenGL ES). Không sử dụng HTML/WebView, không sử dụng APK cũ làm nền.
+Dùng ARCore native. Thay đổi lớn: không khóa điểm A/B trên cùng một mặt phẳng như V3.
 
-## Tạo APK
-GitHub Actions workflow: **Build VKS AR Meter APK** chạy trên nhánh \`feature/ar-meter-native-v2\` khi có thay đổi trong \`android-ar-meter/\`. File đầu ra \`app-debug.apk\` được lưu vào artifact **VKS-AR-METER-APK**. Để tự build, dùng Java 17, Android SDK 35, Gradle 8.9, chạy \`gradle :app:assembleDebug\` bên trong thư mục này.
+- Ưu tiên điểm chiều sâu để chọn trên đồ vật không phẳng; sau đó mặt phẳng; sau đó điểm đặc trưng.
+- Khi AR chưa nhận diện 3D vẫn đặt mốc tạm Instant Placement. **Không hiển thị số đo cho đến khi cả hai mốc có dữ liệu theo dõi đầy đủ**, vì khoảng cách tạm 1 mét chỉ là giả định.
+- Đo độ dài thẳng theo không gian 3D, không phải đường cong trên bề mặt; chỉ là kết quả tham khảo.
+- Khi nhắm vào bề mặt kính, nước, vật sáng bóng, vật trơn hoặc thiếu sáng, phép đo có thể sai hay chưa xác định được.
 
-## Thử trên máy
-1. Cài APK debug và cấp quyền camera; cần Google Play Services for AR trên máy hỗ trợ ARCore.
-2. Hướng camera vào bề mặt có kết cấu; chạm trên màn hình camera hoặc nhắm tâm ngắm và bấm ĐẶT ĐIỂM để đặt A.
-3. Đặt B tương tự; đường nối và độ dài hiện trên camera. Bấm ĐO LẠI để bắt đầu mới.
-4. Đây là phép đo AR tham khảo có sai số. Bề mặt nước, kính, vật bóng và ánh sáng yếu thường gây khó xác định điểm 3D.
-
-**Cảnh báo:** APK có thể biên dịch thành công nhưng vẫn cần kiểm thử trên điện thoại thực. Không dùng làm chứng cứ đo đạc chính thức.
+Build: workflow `Build VKS AR Meter APK` trên nhánh `feature/ar-meter-v4-multi-object`; dùng GitHub Actions, Java 17, Gradle 8.9, Android SDK 35.

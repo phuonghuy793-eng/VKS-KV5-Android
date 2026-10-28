@@ -27,6 +27,7 @@ import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.Config;
 import com.google.ar.core.Coordinates2d;
 import com.google.ar.core.DepthPoint;
+import com.google.ar.core.InstantPlacementPoint;
 import com.google.ar.core.Frame;
 import com.google.ar.core.HitResult;
 import com.google.ar.core.Plane;
@@ -62,8 +63,8 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
     private int texture=-1, program;
     private volatile int width=1,height=1;
     private Anchor anchorA, anchorB;
-    // Khi do tren san/tuong, hai dau phai thuoc cung mat phang AR.
-    private Plane lockedPlane;
+    // Track each independently: depth, plane, feature point or provisional instant placement.
+    private Trackable trackableA, trackableB;
     private int frames=0;
     private boolean hitReady=false;
     private String statusText="";
@@ -87,7 +88,7 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
         display.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         root.addView(display,new FrameLayout.LayoutParams(-1,-1));
         display.setOnTouchListener((v,e)->{
-            if(e.getAction()==MotionEvent.ACTION_UP)pendingTap.set(new PointF(e.getX(),e.getY()));
+            if(e.getAction()==MotionEvent.ACTION_UP){pendingTap.set(new PointF(e.getX(),e.getY()));inform("Đã chạm camera — đang chọn tọa độ 3D...");}
             return true;
         });
         layer=new MeasureLayer();
@@ -104,7 +105,7 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
         LinearLayout foot=new LinearLayout(this);foot.setOrientation(LinearLayout.VERTICAL);
         foot.setPadding(px(15),px(10),px(15),px(15));
         foot.setBackgroundColor(Color.argb(230,8,20,39));
-        instruction=text("Chọn A rồi B trên CÙNG một mặt sàn hoặc tường. Chờ tâm ngắm chuyển xanh.",13,Color.rgb(205,223,244));
+        instruction=text("Chạm A rồi B trên vật cần đo. Được chọn hai độ cao khác nhau.",13,Color.rgb(205,223,244));
         foot.addView(instruction);
         value=text("—",35,Color.WHITE);value.setTypeface(null,1);foot.addView(value);
         LinearLayout buttons=new LinearLayout(this);
@@ -113,16 +114,16 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
         buttons.addView(set,new LinearLayout.LayoutParams(0,px(54),2));
         buttons.addView(clear,new LinearLayout.LayoutParams(0,px(54),1));
         foot.addView(buttons);
-        foot.addView(text("V3: Chế độ đo mặt phẳng ổn định. Kết quả AR chỉ tham khảo, không dùng thay thước thật.",11,Color.rgb(175,193,216)));
+        foot.addView(text("V4: Đo đồ vật, mặt đường, tường và nhiều bề mặt. Mốc tạm CHƯA có số đo tin cậy.",11,Color.rgb(175,193,216)));
         root.addView(foot,new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM));
-        set.setOnClickListener(v->pendingTap.set(new PointF(width/2f,height/2f)));
+        set.setOnClickListener(v->{pendingTap.set(new PointF(width/2f,height/2f));inform("Đã bấm đặt điểm — đang tìm tọa độ 3D...");});
         clear.setOnClickListener(v->display.queueEvent(()->{
             if(anchorA!=null){anchorA.detach();anchorA=null;}
             if(anchorB!=null){anchorB.detach();anchorB=null;}
-            lockedPlane=null;
+            trackableA=null;trackableB=null;
             runOnUiThread(()->{
                 value.setText("—");
-                instruction.setText("Chọn A rồi B trên CÙNG mặt sàn hoặc tường.");
+                instruction.setText("Chạm A rồi B trên hai vị trí bất kỳ của vật.");
                 layer.setAnchors(null,null);
             });
         }));
@@ -145,8 +146,12 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
                 Session s=new Session(this);
                 Config cfg=new Config(s);
                 cfg.setPlaneFindingMode(Config.PlaneFindingMode.HORIZONTAL_AND_VERTICAL);
-                // Tat DepthPoint de khong tron toa do do sau nhieu voi mat phang.
-                cfg.setDepthMode(Config.DepthMode.DISABLED);
+                // Support non-planar objects where the device has depth sensing.
+                if(s.isDepthModeSupported(Config.DepthMode.AUTOMATIC))
+                    cfg.setDepthMode(Config.DepthMode.AUTOMATIC);
+                else cfg.setDepthMode(Config.DepthMode.DISABLED);
+                // Visual fallback marker: shown immediately but NOT counted as valid metric depth.
+                cfg.setInstantPlacementMode(Config.InstantPlacementMode.LOCAL_Y_UP);
                 s.configure(cfg);session=s;
             }catch(UnavailableException|SecurityException ex){
                 inform("ARCore chưa sẵn sàng: "+ex.getClass().getSimpleName());return;
@@ -220,10 +225,10 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
             PointF tap=pendingTap.getAndSet(null);
             if(tap!=null)place(f,tap);
             if(frames++%7==0){
-                boolean ready=hit(f,width/2f,height/2f,anchorA==null?null:lockedPlane)!=null;
+                boolean ready=hit(f,width/2f,height/2f)!=null;
                 if(ready!=hitReady){
                     hitReady=ready;runOnUiThread(()->layer.setReady(ready));
-                    inform(ready?"Sẵn sàng đặt điểm đo.":"Hãy quét nền/tường có chi tiết để định vị.");
+                    inform(ready?"Đã có điểm 3D: bấm ĐẶT ĐIỂM hoặc chạm vật.":"Có thể chấm điểm tạm; di chuyển nhẹ để AR lấy độ sâu.");
                 }
             }
             if(frames%3==0)renderAnchors(cam);
@@ -247,59 +252,65 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,0,4);
         GLES20.glDisableVertexAttribArray(v);GLES20.glDisableVertexAttribArray(u);
     }
-    // Loai bo DepthPoint va Point vi do sau cua chung co the khac mat phang.
-    // Plane.getSubsumedBy() xu ly truong hop ARCore gop cac mat phang.
-    private static Plane rootPlane(Plane plane) {
-        for(int i=0;i<12 && plane!=null;i++){
-            Plane parent=plane.getSubsumedBy();
-            if(parent==null)return plane;
-            plane=parent;
-        }
-        return plane;
-    }
-    private HitResult hit(Frame frame,float x,float y,Plane required){
-        Plane rootRequired=required==null?null:rootPlane(required);
-        HitResult firstValid=null;
+    // Prefer scene-depth (arbitrary shapes), then detected planes, then visual feature points.
+    // Never require both A and B to be on the same plane: height and 3D gaps are valid.
+    private HitResult hit(Frame frame,float x,float y){
+        HitResult depth=null,plane=null,feature=null;
         for(HitResult h:frame.hitTest(x,y)){
             Trackable t=h.getTrackable();
-            if(!(t instanceof Plane) || t.getTrackingState()!=TrackingState.TRACKING)continue;
-            Plane p=(Plane)t;
-            if(!p.isPoseInPolygon(h.getHitPose()))continue;
-            float d=h.getDistance();
-            if(!Float.isFinite(d)||d<0.20f||d>15f)continue;
-            if(rootRequired!=null) {
-                if(rootPlane(p).equals(rootRequired))return h;
-            } else if(firstValid==null) firstValid=h;
+            if(t.getTrackingState()!=TrackingState.TRACKING)continue;
+            float meters=h.getDistance();
+            if(!Float.isFinite(meters)||meters<0.10f||meters>20f)continue;
+            if(t instanceof DepthPoint){
+                if(depth==null)depth=h;
+            }else if(t instanceof Plane){
+                Plane p=(Plane)t;
+                if(plane==null&&p.isPoseInPolygon(h.getHitPose()))plane=h;
+            }else if(t instanceof Point){
+                if(feature==null)feature=h;
+            }
         }
-        return rootRequired==null?firstValid:null;
+        return depth!=null?depth:(plane!=null?plane:feature);
+    }
+    private boolean provisional(Trackable t){
+        return t instanceof InstantPlacementPoint
+            &&((InstantPlacementPoint)t).getTrackingMethod()!=InstantPlacementPoint.TrackingMethod.FULL_TRACKING;
     }
     private void place(Frame frame,PointF location){
-        boolean restart=anchorA!=null&&anchorB!=null;
-        Plane required=(anchorA!=null&&!restart)?lockedPlane:null;
-        HitResult h=hit(frame,location.x,location.y,required);
+        HitResult h=hit(frame,location.x,location.y);
+        boolean estimated=false;
+        // Never silently invent a measured length when the AR scene has no true 3D hit.
         if(h==null){
-            inform(required!=null
-                ?"Điểm B phải nằm trên CÙNG mặt phẳng với A. Đừng chọn vật khác độ cao."
-                :"Chưa nhận diện được mặt phẳng. Quét nền gạch/tường có hoa văn rồi thử lại.");
-            return;
+            for(HitResult candidate:frame.hitTestInstantPlacement(location.x,location.y,1.0f)){
+                if(candidate.getTrackable() instanceof InstantPlacementPoint){
+                    h=candidate;estimated=true;break;
+                }
+            }
         }
-        if(restart){
+        if(h==null){inform("Chưa đặt được mốc: camera đang mất định vị. Thử hướng sang vùng có chi tiết.");return;}
+        if(anchorA!=null&&anchorB!=null){
             anchorA.detach();anchorB.detach();
-            anchorA=null;anchorB=null;lockedPlane=null;
+            anchorA=null;anchorB=null;trackableA=null;trackableB=null;
         }
+        Trackable chosen=h.getTrackable();
         Anchor fresh=h.createAnchor();
+        final boolean initialEstimate=estimated||provisional(chosen);
         if(anchorA==null){
-            anchorA=fresh;
-            lockedPlane=(Plane)h.getTrackable();
+            anchorA=fresh;trackableA=chosen;
             runOnUiThread(()->{
-                value.setText("A ✓");
-                instruction.setText("Đã khóa mặt phẳng. Chấm B trên CÙNG sàn/tường.");
+                value.setText(initialEstimate?"A tạm":"A ✓");
+                instruction.setText("Đã chọn A. Chạm B ở bất kỳ độ cao hoặc vật khác.");
             });
         }else{
-            anchorB=fresh;
-            runOnUiThread(()->instruction.setText("Đã đo A–B. Chạm tiếp để bắt đầu đoạn mới."));
+            anchorB=fresh;trackableB=chosen;
+            runOnUiThread(()->instruction.setText("Đã chọn A–B. Chạm tiếp để đo đoạn khác."));
         }
-        inform("Đã ghi nhận điểm trên mặt phẳng AR.");
+        String source=chosen instanceof DepthPoint?"chiều sâu":
+            chosen instanceof Plane?"mặt phẳng":
+            chosen instanceof Point?"điểm đặc trưng":"vị trí tạm";
+        inform(initialEstimate?
+            "Đã đặt mốc TẠM; đang đợi AR xác định khoảng cách thực.":
+            "Đã đặt điểm 3D bằng "+source+".");
     }
     private static float distance(Pose a,Pose b){
         float dx=a.tx()-b.tx(),dy=a.ty()-b.ty(),dz=a.tz()-b.tz();
@@ -318,13 +329,16 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
     }
     private void renderAnchors(com.google.ar.core.Camera camera){
         PointF a=position(anchorA,camera),b=position(anchorB,camera);
+        final boolean incomplete=provisional(trackableA)||provisional(trackableB);
+        final boolean firstEstimated=provisional(trackableA);
         final Float len=(anchorA!=null&&anchorB!=null&&
             anchorA.getTrackingState()==TrackingState.TRACKING&&
             anchorB.getTrackingState()==TrackingState.TRACKING)?
             distance(anchorA.getPose(),anchorB.getPose()):null;
         runOnUiThread(()->{
             layer.setAnchors(a,b);
-            if(len!=null)value.setText(DistanceMath.format(len));
+            if(len!=null)value.setText(incomplete?"Đang xác định độ sâu...":DistanceMath.format(len));
+            else if(anchorA!=null&&anchorB==null)value.setText(firstEstimated?"A tạm":"A ✓");
         });
     }
     /** Project persistent 3D anchors to a lightweight Canvas overlay. */
