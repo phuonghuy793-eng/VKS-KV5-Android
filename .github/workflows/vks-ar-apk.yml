@@ -2,9 +2,7 @@ name: Build VKS AR Meter APK
 on:
   push:
     branches: [feature/ar-meter-native-v2]
-    paths:
-      - "android-ar-meter/**"
-      - ".github/workflows/vks-ar-apk.yml"
+    paths: ["android-ar-meter/**", ".github/workflows/vks-ar-apk.yml"]
   workflow_dispatch:
 permissions:
   contents: read
@@ -19,11 +17,13 @@ jobs:
           distribution: temurin
           java-version: '17'
       - name: Prepare Android SDK
+        shell: bash
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          which sdkmanager
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -1)"
+          echo "Using $SDKMANAGER"
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
