@@ -268,7 +268,7 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
             float d=h.getDistance();
             if(!Float.isFinite(d)||d<0.20f||d>15f)continue;
             if(rootRequired!=null) {
-                if(rootPlane(p)==rootRequired)return h;
+                if(rootPlane(p).equals(rootRequired))return h;
             } else if(firstValid==null) firstValid=h;
         }
         return rootRequired==null?firstValid:null;
