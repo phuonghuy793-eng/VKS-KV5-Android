@@ -4,6 +4,7 @@ on:
     branches: [feature/app-vks-integrated-ar-v5]
     paths:
       - "app/**"
+      - "gradle.properties"
       - ".github/workflows/app-vks-ar-integrated.yml"
   workflow_dispatch:
 permissions:
