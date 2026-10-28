@@ -1,0 +1,33 @@
+name: Export App VKS AR V5 source handoff
+on:
+  push:
+    branches: [feature/app-vks-integrated-ar-v5]
+    paths:
+      - '.github/workflows/export-ar-handoff.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify handoff source
+        run: |
+          test -s app/src/main/assets/index.html
+          test -s app/src/main/assets/ar_entry.js
+          test -s app/src/main/java/vn/vks/khuvuc5/armeter/ArMeasureActivity.java
+          test -s .github/workflows/app-vks-ar-integrated.yml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SOURCE-APP-VKS-AR-V5
+          path: |
+            app/
+            build.gradle
+            gradle.properties
+            settings.gradle
+            AR_INTEGRATION_README.md
+            .github/workflows/app-vks-ar-integrated.yml
+            .github/workflows/export-ar-handoff.yml
+          if-no-files-found: error
+          retention-days: 14
