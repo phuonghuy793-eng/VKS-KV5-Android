@@ -66,8 +66,26 @@ public class MainActivity extends Activity {
 
         // Isolated native bridge used by the new "Sơ đồ vụ việc" PDF export only.
         webView.addJavascriptInterface(new AndroidFileBridge(), "AndroidFile");
+        // ARCore is a native Android screen; the WebView only displays the menu.
+        webView.addJavascriptInterface(new AndroidArBridge(), "AndroidAR");
 
         webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                if (url != null && url.startsWith(HOME)) {
+                    try (java.io.InputStream input = getAssets().open("vks_ar_integration.js");
+                         java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream()) {
+                        byte[] chunk = new byte[8192];
+                        int count;
+                        while ((count = input.read(chunk)) != -1) bytes.write(chunk, 0, count);
+                        view.evaluateJavascript(bytes.toString("UTF-8"), null);
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this,
+                            "Không nạp được tiện ích Thước đo AR", Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
@@ -138,6 +156,21 @@ public class MainActivity extends Activity {
         try {
             startActivity(new Intent(Intent.ACTION_VIEW, uri));
         } catch (Exception ignored) { }
+    }
+
+    private class AndroidArBridge {
+        @JavascriptInterface
+        public void openCamera() {
+            runOnUiThread(() -> {
+                try {
+                    startActivity(new Intent(MainActivity.this,
+                        vn.vks.khuvuc5.armeter.ArMeasureActivity.class));
+                } catch (Exception error) {
+                    Toast.makeText(MainActivity.this,
+                        "Không mở được camera AR: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
     }
 
     private class AndroidFileBridge {

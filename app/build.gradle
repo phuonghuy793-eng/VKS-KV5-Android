@@ -7,10 +7,17 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId 'vn.dongthap.vkskv5'
+        applicationId 'vn.dongthap.vkskv5.arpreview'
         minSdk 24
         targetSdk 35
-        versionCode 6
-        versionName '2.2.3'
+        versionCode 7
+        versionName '2.3.0-ar-preview'
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+dependencies {
+    implementation 'com.google.ar:core:1.56.0'
 }
