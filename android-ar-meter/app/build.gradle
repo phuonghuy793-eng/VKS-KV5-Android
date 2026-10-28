@@ -1,0 +1,17 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'vn.vks.khuvuc5.armeter'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'vn.vks.khuvuc5.armeter'
+        minSdk 26
+        targetSdk 34
+        versionCode 2
+        versionName '2.1-native'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+dependencies { implementation 'com.google.ar:core:1.56.0' }
