@@ -62,6 +62,8 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
     private int texture=-1, program;
     private volatile int width=1,height=1;
     private Anchor anchorA, anchorB;
+    // Khi do tren san/tuong, hai dau phai thuoc cung mat phang AR.
+    private Plane lockedPlane;
     private int frames=0;
     private boolean hitReady=false;
     private String statusText="";
@@ -102,7 +104,7 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
         LinearLayout foot=new LinearLayout(this);foot.setOrientation(LinearLayout.VERTICAL);
         foot.setPadding(px(15),px(10),px(15),px(15));
         foot.setBackgroundColor(Color.argb(230,8,20,39));
-        instruction=text("Ngắm điểm A, bấm ĐẶT ĐIỂM hoặc chạm trực tiếp vào ảnh camera",13,Color.rgb(205,223,244));
+        instruction=text("Chọn A rồi B trên CÙNG một mặt sàn hoặc tường. Chờ tâm ngắm chuyển xanh.",13,Color.rgb(205,223,244));
         foot.addView(instruction);
         value=text("—",35,Color.WHITE);value.setTypeface(null,1);foot.addView(value);
         LinearLayout buttons=new LinearLayout(this);
@@ -111,15 +113,16 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
         buttons.addView(set,new LinearLayout.LayoutParams(0,px(54),2));
         buttons.addView(clear,new LinearLayout.LayoutParams(0,px(54),1));
         foot.addView(buttons);
-        foot.addView(text("Kết quả ước lượng của ARCore; không thay thế phép đo chuyên môn.",11,Color.rgb(175,193,216)));
+        foot.addView(text("V3: Chế độ đo mặt phẳng ổn định. Kết quả AR chỉ tham khảo, không dùng thay thước thật.",11,Color.rgb(175,193,216)));
         root.addView(foot,new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM));
         set.setOnClickListener(v->pendingTap.set(new PointF(width/2f,height/2f)));
         clear.setOnClickListener(v->display.queueEvent(()->{
             if(anchorA!=null){anchorA.detach();anchorA=null;}
             if(anchorB!=null){anchorB.detach();anchorB=null;}
+            lockedPlane=null;
             runOnUiThread(()->{
                 value.setText("—");
-                instruction.setText("Ngắm điểm A, bấm ĐẶT ĐIỂM hoặc chạm trực tiếp vào ảnh camera");
+                instruction.setText("Chọn A rồi B trên CÙNG mặt sàn hoặc tường.");
                 layer.setAnchors(null,null);
             });
         }));
@@ -142,7 +145,8 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
                 Session s=new Session(this);
                 Config cfg=new Config(s);
                 cfg.setPlaneFindingMode(Config.PlaneFindingMode.HORIZONTAL_AND_VERTICAL);
-                if(s.isDepthModeSupported(Config.DepthMode.AUTOMATIC))cfg.setDepthMode(Config.DepthMode.AUTOMATIC);
+                // Tat DepthPoint de khong tron toa do do sau nhieu voi mat phang.
+                cfg.setDepthMode(Config.DepthMode.DISABLED);
                 s.configure(cfg);session=s;
             }catch(UnavailableException|SecurityException ex){
                 inform("ARCore chưa sẵn sàng: "+ex.getClass().getSimpleName());return;
@@ -216,13 +220,13 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
             PointF tap=pendingTap.getAndSet(null);
             if(tap!=null)place(f,tap);
             if(frames++%7==0){
-                boolean ready=hit(f,width/2f,height/2f)!=null;
+                boolean ready=hit(f,width/2f,height/2f,anchorA==null?null:lockedPlane)!=null;
                 if(ready!=hitReady){
                     hitReady=ready;runOnUiThread(()->layer.setReady(ready));
                     inform(ready?"Sẵn sàng đặt điểm đo.":"Hãy quét nền/tường có chi tiết để định vị.");
                 }
-                renderAnchors(cam);
             }
+            if(frames%3==0)renderAnchors(cam);
         }catch(CameraNotAvailableException ex){inform("Camera không khả dụng.");}
         catch(Exception ex){inform("Lỗi AR: "+ex.getClass().getSimpleName());}
     }
@@ -243,34 +247,59 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,0,4);
         GLES20.glDisableVertexAttribArray(v);GLES20.glDisableVertexAttribArray(u);
     }
-    private HitResult hit(Frame frame,float x,float y){
-        HitResult plane=null,point=null;
+    // Loai bo DepthPoint va Point vi do sau cua chung co the khac mat phang.
+    // Plane.getSubsumedBy() xu ly truong hop ARCore gop cac mat phang.
+    private static Plane rootPlane(Plane plane) {
+        for(int i=0;i<12 && plane!=null;i++){
+            Plane parent=plane.getSubsumedBy();
+            if(parent==null)return plane;
+            plane=parent;
+        }
+        return plane;
+    }
+    private HitResult hit(Frame frame,float x,float y,Plane required){
+        Plane rootRequired=required==null?null:rootPlane(required);
+        HitResult firstValid=null;
         for(HitResult h:frame.hitTest(x,y)){
             Trackable t=h.getTrackable();
-            if(t.getTrackingState()!=TrackingState.TRACKING)continue;
-            if(t instanceof DepthPoint)return h;
-            if(t instanceof Plane){
-                Plane p=(Plane)t;
-                if(plane==null&&p.isPoseInPolygon(h.getHitPose()))plane=h;
-            }else if(t instanceof Point&&point==null){point=h;}
+            if(!(t instanceof Plane) || t.getTrackingState()!=TrackingState.TRACKING)continue;
+            Plane p=(Plane)t;
+            if(!p.isPoseInPolygon(h.getHitPose()))continue;
+            float d=h.getDistance();
+            if(!Float.isFinite(d)||d<0.20f||d>15f)continue;
+            if(rootRequired!=null) {
+                if(rootPlane(p)==rootRequired)return h;
+            } else if(firstValid==null) firstValid=h;
         }
-        return plane!=null?plane:point;
+        return rootRequired==null?firstValid:null;
     }
     private void place(Frame frame,PointF location){
-        HitResult h=hit(frame,location.x,location.y);
-        if(h==null){inform("Không bắt được điểm. Ngắm nền gạch, di chuyển chậm rồi thử lại.");return;}
-        if(anchorA!=null&&anchorB!=null){
-            anchorA.detach();anchorB.detach();anchorA=null;anchorB=null;
+        boolean restart=anchorA!=null&&anchorB!=null;
+        Plane required=(anchorA!=null&&!restart)?lockedPlane:null;
+        HitResult h=hit(frame,location.x,location.y,required);
+        if(h==null){
+            inform(required!=null
+                ?"Điểm B phải nằm trên CÙNG mặt phẳng với A. Đừng chọn vật khác độ cao."
+                :"Chưa nhận diện được mặt phẳng. Quét nền gạch/tường có hoa văn rồi thử lại.");
+            return;
+        }
+        if(restart){
+            anchorA.detach();anchorB.detach();
+            anchorA=null;anchorB=null;lockedPlane=null;
         }
         Anchor fresh=h.createAnchor();
         if(anchorA==null){
             anchorA=fresh;
-            runOnUiThread(()->{value.setText("A ✓");instruction.setText("Chọn điểm B rồi đặt điểm lần nữa");});
+            lockedPlane=(Plane)h.getTrackable();
+            runOnUiThread(()->{
+                value.setText("A ✓");
+                instruction.setText("Đã khóa mặt phẳng. Chấm B trên CÙNG sàn/tường.");
+            });
         }else{
             anchorB=fresh;
-            runOnUiThread(()->instruction.setText("Đã đo A–B. Chạm tiếp để đo đoạn mới."));
+            runOnUiThread(()->instruction.setText("Đã đo A–B. Chạm tiếp để bắt đầu đoạn mới."));
         }
-        inform("Đã ghi nhận tọa độ AR thực.");
+        inform("Đã ghi nhận điểm trên mặt phẳng AR.");
     }
     private static float distance(Pose a,Pose b){
         float dx=a.tx()-b.tx(),dy=a.ty()-b.ty(),dz=a.tz()-b.tz();
