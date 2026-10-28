@@ -2,7 +2,7 @@ name: Build VKS App with AR V5 Preview
 on:
   push:
     branches: [feature/vks-app-ar-v5-integration]
-    paths: ['app/**', '.github/workflows/vks-app-ar-preview.yml']
+    paths: ['app/**', 'gradle.properties', '.github/workflows/vks-app-ar-preview.yml']
   workflow_dispatch:
 permissions:
   contents: read
