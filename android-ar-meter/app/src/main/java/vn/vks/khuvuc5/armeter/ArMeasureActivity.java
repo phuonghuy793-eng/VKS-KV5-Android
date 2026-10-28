@@ -42,6 +42,9 @@ import com.google.ar.core.exceptions.UnavailableException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -62,9 +65,18 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
     private boolean requestedInstall, displayRunning;
     private int texture=-1, program;
     private volatile int width=1,height=1;
-    private Anchor anchorA, anchorB;
-    // Track each independently: depth, plane, feature point or provisional instant placement.
-    private Trackable trackableA, trackableB;
+    private static final int MAX_POINTS=24;
+    // ARCore anchor and Trackable access is confined to the GL thread.
+    private final ArrayList<MeasurePoint> points = new ArrayList<>();
+    private boolean closed = false;
+    private float lastMetric = Float.NaN;
+    private int movementAlertFrames = 0;
+    private static final class MeasurePoint {
+        final Anchor anchor;
+        final Trackable trackable;
+        final boolean noisy;
+        MeasurePoint(Anchor a,Trackable t,boolean n){anchor=a;trackable=t;noisy=n;}
+    }
     private int frames=0;
     private boolean hitReady=false;
     private String statusText="";
@@ -105,27 +117,62 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
         LinearLayout foot=new LinearLayout(this);foot.setOrientation(LinearLayout.VERTICAL);
         foot.setPadding(px(15),px(10),px(15),px(15));
         foot.setBackgroundColor(Color.argb(230,8,20,39));
-        instruction=text("Chạm A rồi B trên vật cần đo. Được chọn hai độ cao khác nhau.",13,Color.rgb(205,223,244));
+        instruction=text("Chạm A, B, C... trên đồ vật. Có thể dùng ĐẶT ĐIỂM ở tâm ngắm.",13,Color.rgb(205,223,244));
         foot.addView(instruction);
-        value=text("—",35,Color.WHITE);value.setTypeface(null,1);foot.addView(value);
+        value=text("Chưa có điểm",27,Color.WHITE);value.setTypeface(null,1);foot.addView(value);
         LinearLayout buttons=new LinearLayout(this);
-        Button set=new Button(this);set.setText("ĐẶT ĐIỂM");set.setAllCaps(false);
-        Button clear=new Button(this);clear.setText("ĐO LẠI");clear.setAllCaps(false);
-        buttons.addView(set,new LinearLayout.LayoutParams(0,px(54),2));
-        buttons.addView(clear,new LinearLayout.LayoutParams(0,px(54),1));
+        Button set=new Button(this);set.setText("THÊM ĐIỂM");set.setAllCaps(false);set.setTextSize(12);
+        Button undo=new Button(this);undo.setText("LÙI 1 ĐIỂM");undo.setAllCaps(false);undo.setTextSize(11);
+        Button close=new Button(this);close.setText("KHÉP VÙNG");close.setAllCaps(false);close.setTextSize(11);
+        buttons.addView(set,new LinearLayout.LayoutParams(0,px(49),2.0f));
+        buttons.addView(undo,new LinearLayout.LayoutParams(0,px(49),1.3f));
+        buttons.addView(close,new LinearLayout.LayoutParams(0,px(49),1.3f));
         foot.addView(buttons);
-        foot.addView(text("V4: Đo đồ vật, mặt đường, tường và nhiều bề mặt. Mốc tạm CHƯA có số đo tin cậy.",11,Color.rgb(175,193,216)));
+        Button clear=new Button(this);
+        clear.setText("XÓA HẾT / ĐO MỚI");clear.setAllCaps(false);clear.setTextSize(11);
+        foot.addView(clear,new LinearLayout.LayoutParams(-1,px(40)));
+        foot.addView(text("V5: Nhiều đoạn / chu vi / diện tích. Số đo AR chỉ tham khảo.",11,Color.rgb(175,193,216)));
         root.addView(foot,new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM));
-        set.setOnClickListener(v->{pendingTap.set(new PointF(width/2f,height/2f));inform("Đã bấm đặt điểm — đang tìm tọa độ 3D...");});
-        clear.setOnClickListener(v->display.queueEvent(()->{
-            if(anchorA!=null){anchorA.detach();anchorA=null;}
-            if(anchorB!=null){anchorB.detach();anchorB=null;}
-            trackableA=null;trackableB=null;
+        set.setOnClickListener(v->{
+            pendingTap.set(new PointF(width/2f,height/2f));
+            inform("Đang chọn điểm trên tâm ngắm...");
+        });
+        undo.setOnClickListener(v->display.queueEvent(()->{
+            pendingTap.set(null);
+            if(!points.isEmpty()){
+                MeasurePoint p=points.remove(points.size()-1);
+                p.anchor.detach();
+            }
+            closed=false;lastMetric=Float.NaN;movementAlertFrames=0;
             runOnUiThread(()->{
-                value.setText("—");
-                instruction.setText("Chạm A rồi B trên hai vị trí bất kỳ của vật.");
-                layer.setAnchors(null,null);
+                instruction.setText("Đã hoàn tác. Chạm để đặt tiếp.");
+                value.setText(points.size()+" điểm");
             });
+        }));
+        close.setOnClickListener(v->display.queueEvent(()->{
+            if(points.size()<3){
+                inform("Cần ít nhất 3 điểm để khép vùng và tính diện tích.");
+                return;
+            }
+            for(MeasurePoint p:points){
+                if(p.anchor.getTrackingState()!=TrackingState.TRACKING || provisional(p.trackable)){
+                    inform("Có điểm đang mất định vị / tạm. Chưa thể khép vùng.");
+                    return;
+                }
+            }
+            closed=true;lastMetric=Float.NaN;
+            inform("Đã khép vùng. Xem chu vi và diện tích nếu các điểm cùng mặt.");
+        }));
+        clear.setOnClickListener(v->display.queueEvent(()->{
+            pendingTap.set(null);
+            for(MeasurePoint p:points)p.anchor.detach();
+            points.clear();closed=false;lastMetric=Float.NaN;movementAlertFrames=0;
+            runOnUiThread(()->{
+                value.setText("Chưa có điểm");
+                instruction.setText("Chạm A, B, C... trên đồ vật. Có thể dùng ĐẶT ĐIỂM.");
+                layer.setPoints(new ArrayList<>(),new float[0],false);
+            });
+            inform("Đã xóa các điểm, sẵn sàng đo mới.");
         }));
         setContentView(root);
     }
@@ -160,7 +207,7 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
         try{
             session.resume();
             display.onResume();displayRunning=true;
-            inform("Di chuyển camera chậm để tìm nền/tường có hoa văn.");
+            inform("Di chuyển camera nhẹ để AR nhận diện hình dạng vật thể.");
         }catch(CameraNotAvailableException ex){inform("Không truy cập được camera. Đóng ứng dụng dùng camera khác.");}
         catch(Exception ex){inform("Không khởi động AR: "+ex.getClass().getSimpleName());}
     }
@@ -217,7 +264,7 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
             drawCamera(f);
             com.google.ar.core.Camera cam=f.getCamera();
             if(cam.getTrackingState()!=TrackingState.TRACKING){
-                inform("Đang định vị không gian... Hướng vào mặt sàn có hoa văn.");
+                inform("Camera đang mất định vị. Hướng vào vùng có họa tiết và di chuyển chậm.");
                 pendingTap.set(null);
                 if(frames++%12==0)runOnUiThread(()->layer.setReady(false));
                 return;
@@ -270,47 +317,67 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
                 if(feature==null)feature=h;
             }
         }
+        // A detected plane is more stable than noisy scene depth when they agree spatially.
+        if(depth!=null && plane!=null &&
+           distance(depth.getHitPose(),plane.getHitPose())<0.055f) return plane;
         return depth!=null?depth:(plane!=null?plane:feature);
     }
     private boolean provisional(Trackable t){
         return t instanceof InstantPlacementPoint
             &&((InstantPlacementPoint)t).getTrackingMethod()!=InstantPlacementPoint.TrackingMethod.FULL_TRACKING;
     }
-    private void place(Frame frame,PointF location){
-        HitResult h=hit(frame,location.x,location.y);
-        boolean estimated=false;
-        // Never silently invent a measured length when the AR scene has no true 3D hit.
-        if(h==null){
-            for(HitResult candidate:frame.hitTestInstantPlacement(location.x,location.y,1.0f)){
-                if(candidate.getTrackable() instanceof InstantPlacementPoint){
-                    h=candidate;estimated=true;break;
+    /** Neighbouring AR depth hits are compared to flag abrupt discontinuities/edges. */
+    private boolean noisyDepth(Frame frame,PointF tap,HitResult center){
+        if(!(center.getTrackable() instanceof DepthPoint))return false;
+        final float[][] offsets={{-9,0},{9,0},{0,-9},{0,9}};
+        int matches=0, disagrees=0;
+        for(float[] o:offsets){
+            for(HitResult h:frame.hitTest(tap.x+o[0],tap.y+o[1])){
+                if(h.getTrackable() instanceof DepthPoint &&
+                   h.getTrackable().getTrackingState()==TrackingState.TRACKING){
+                    matches++;
+                    float error=distance(center.getHitPose(),h.getHitPose());
+                    float allowed=Math.max(0.07f,0.10f*center.getDistance());
+                    if(error>allowed)disagrees++;
+                    break;
                 }
             }
         }
-        if(h==null){inform("Chưa đặt được mốc: camera đang mất định vị. Thử hướng sang vùng có chi tiết.");return;}
-        if(anchorA!=null&&anchorB!=null){
-            anchorA.detach();anchorB.detach();
-            anchorA=null;anchorB=null;trackableA=null;trackableB=null;
+        return matches<2 || disagrees>=2;
+    }
+    private void place(Frame frame,PointF location){
+        if(closed){
+            inform("Vùng đã khép. Chọn XÓA HẾT để đo mới hoặc LÙI 1 ĐIỂM để sửa.");
+            return;
         }
-        Trackable chosen=h.getTrackable();
-        Anchor fresh=h.createAnchor();
-        final boolean initialEstimate=estimated||provisional(chosen);
-        if(anchorA==null){
-            anchorA=fresh;trackableA=chosen;
-            runOnUiThread(()->{
-                value.setText(initialEstimate?"A tạm":"A ✓");
-                instruction.setText("Đã chọn A. Chạm B ở bất kỳ độ cao hoặc vật khác.");
-            });
-        }else{
-            anchorB=fresh;trackableB=chosen;
-            runOnUiThread(()->instruction.setText("Đã chọn A–B. Chạm tiếp để đo đoạn khác."));
+        if(points.size()>=MAX_POINTS){
+            inform("Đã đủ 24 điểm. Dùng KHÉP VÙNG hoặc XÓA HẾT.");
+            return;
         }
-        String source=chosen instanceof DepthPoint?"chiều sâu":
-            chosen instanceof Plane?"mặt phẳng":
-            chosen instanceof Point?"điểm đặc trưng":"vị trí tạm";
-        inform(initialEstimate?
-            "Đã đặt mốc TẠM; đang đợi AR xác định khoảng cách thực.":
-            "Đã đặt điểm 3D bằng "+source+".");
+        HitResult h=hit(frame,location.x,location.y);
+        boolean estimate=false;
+        if(h==null){
+            for(HitResult candidate:frame.hitTestInstantPlacement(location.x,location.y,1.0f)){
+                if(candidate.getTrackable() instanceof InstantPlacementPoint){
+                    h=candidate;estimate=true;break;
+                }
+            }
+        }
+        if(h==null){
+            inform("Chưa bắt được điểm AR; thử di chuyển nhẹ hoặc chọn chỗ có chi tiết.");
+            return;
+        }
+        boolean noisy=noisyDepth(frame,location,h);
+        Trackable trackable=h.getTrackable();
+        Anchor anchor=h.createAnchor();
+        points.add(new MeasurePoint(anchor,trackable,noisy));
+        int n=points.size();
+        lastMetric=Float.NaN;movementAlertFrames=0;
+        String label=String.valueOf((char)('A'+n-1));
+        if(noisy) inform("Điểm "+label+" nằm gần vùng đổi độ sâu; số đo có thể lệch. Dùng LÙI 1 ĐIỂM nếu cần.");
+        else if(estimate||provisional(trackable))
+            inform("Đã đặt điểm "+label+" tạm: chờ AR xác định độ sâu thực.");
+        else inform("Đã đặt điểm "+label+". Chạm để thêm điểm tiếp theo.");
     }
     private static float distance(Pose a,Pose b){
         float dx=a.tx()-b.tx(),dy=a.ty()-b.ty(),dz=a.tz()-b.tz();
@@ -327,54 +394,150 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
         if(clip[3]<=0)return null;
         return new PointF((clip[0]/clip[3]+1)*.5f*width,(1-clip[1]/clip[3])*.5f*height);
     }
+    private static float pointArea3D(List<Pose> poses){
+        // Newell area vector. Valid for a simple near-planar 3D polygon only.
+        Pose base=poses.get(0);
+        float nx=0,ny=0,nz=0;
+        for(int i=0;i<poses.size();i++){
+            Pose u=poses.get(i),v=poses.get((i+1)%poses.size());
+            float ux=u.tx()-base.tx(),uy=u.ty()-base.ty(),uz=u.tz()-base.tz();
+            float vx=v.tx()-base.tx(),vy=v.ty()-base.ty(),vz=v.tz()-base.tz();
+            nx+=uy*vz-uz*vy;
+            ny+=uz*vx-ux*vz;
+            nz+=ux*vy-uy*vx;
+        }
+        float mag=(float)Math.sqrt(nx*nx+ny*ny+nz*nz);
+        if(mag<1e-5f)return Float.NaN;
+        nx/=mag;ny/=mag;nz/=mag;
+        float largest=0;
+        for(Pose p:poses)largest=Math.max(largest,distance(base,p));
+        float threshold=Math.max(0.035f,largest*.035f);
+        for(Pose p:poses){
+            float deviation=Math.abs(nx*(p.tx()-base.tx())+
+                ny*(p.ty()-base.ty())+nz*(p.tz()-base.tz()));
+            if(deviation>threshold)return Float.NaN;
+        }
+        return mag*.5f;
+    }
+    private static String areaText(float sqMeters){
+        if(!Float.isFinite(sqMeters)||sqMeters<0)return "Chưa xác định";
+        Locale vi=Locale.forLanguageTag("vi-VN");
+        if(sqMeters<0.1f)return String.format(vi,"≈ %.0f cm²",sqMeters*10000f);
+        return String.format(vi,"≈ %.2f m²",sqMeters);
+    }
     private void renderAnchors(com.google.ar.core.Camera camera){
-        PointF a=position(anchorA,camera),b=position(anchorB,camera);
-        final boolean incomplete=provisional(trackableA)||provisional(trackableB);
-        final boolean firstEstimated=provisional(trackableA);
-        final Float len=(anchorA!=null&&anchorB!=null&&
-            anchorA.getTrackingState()==TrackingState.TRACKING&&
-            anchorB.getTrackingState()==TrackingState.TRACKING)?
-            distance(anchorA.getPose(),anchorB.getPose()):null;
+        final int n=points.size();
+        ArrayList<PointF> screenPoints=new ArrayList<>(n);
+        ArrayList<Pose> poses=new ArrayList<>(n);
+        boolean complete=true,uncertain=false;
+        for(MeasurePoint point:points){
+            screenPoints.add(position(point.anchor,camera));
+            if(point.anchor.getTrackingState()!=TrackingState.TRACKING ||
+               provisional(point.trackable)){
+                complete=false;
+            }
+            if(point.noisy)uncertain=true;
+            poses.add(point.anchor.getPose());
+        }
+        final float[] lengths=new float[Math.max(0,n-1)];
+        float total=0;
+        for(int i=1;i<n;i++){
+            float length=distance(poses.get(i-1),poses.get(i));
+            lengths[i-1]=length;total+=length;
+        }
+        if(closed && n>=3)total+=distance(poses.get(n-1),poses.get(0));
+        float area=closed && n>=3 && complete?pointArea3D(poses):Float.NaN;
+        if(complete && n>=2){
+            if(Float.isFinite(lastMetric)){
+                float difference=Math.abs(lastMetric-total);
+                if(difference>Math.max(0.018f,lastMetric*.035f))
+                    movementAlertFrames=25;
+            }
+            lastMetric=total;
+        }else lastMetric=Float.NaN;
+        if(movementAlertFrames>0)movementAlertFrames--;
+        final boolean unstable=movementAlertFrames>0;
+        final boolean completeNow=complete;
+        final boolean uncertainNow=uncertain;
+        final float measured=total;
+        final float areaNow=area;
+        final boolean isClosed=closed;
         runOnUiThread(()->{
-            layer.setAnchors(a,b);
-            if(len!=null)value.setText(incomplete?"Đang xác định độ sâu...":DistanceMath.format(len));
-            else if(anchorA!=null&&anchorB==null)value.setText(firstEstimated?"A tạm":"A ✓");
+            layer.setPoints(screenPoints,lengths,isClosed);
+            String caption;
+            if(n==0)caption="Chưa có điểm";
+            else if(n==1)caption="Đã đặt A • thêm điểm B";
+            else if(!completeNow)caption="Đang xác định độ sâu...";
+            else caption=(isClosed?"Chu vi ":"Tổng ")+DistanceMath.format(measured);
+            value.setText(caption);
+            if(n>1 && isClosed && completeNow){
+                instruction.setText("Diện tích "+areaText(areaNow)+
+                    (uncertainNow||unstable?" • ⚠ Kiểm tra lại sai số":" • Kết quả AR tham khảo"));
+            }else if(n>1){
+                instruction.setText(n+" điểm • "+(uncertainNow||unstable?
+                    "⚠ Độ sâu thay đổi, nên đo lại điểm nghi ngờ":
+                    !completeNow?"Có mốc tạm / mất định vị":
+                    "Thêm điểm hoặc khép vùng (từ 3 điểm)"));
+            }else instruction.setText("Đã đặt "+n+" điểm. Chạm để thêm điểm kế tiếp.");
         });
     }
-    /** Project persistent 3D anchors to a lightweight Canvas overlay. */
+    /** Lightweight HUD: marks A-X, segment lengths and optional closing edge. */
     private class MeasureLayer extends View {
         private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
-        private PointF a,b;
-        private boolean ready=false;
+        private List<PointF> current=new ArrayList<>();
+        private float[] lengths=new float[0];
+        private boolean closedLine=false,ready=false;
         MeasureLayer(){super(ArMeasureActivity.this);}
         void setReady(boolean ready){if(this.ready!=ready){this.ready=ready;invalidate();}}
-        void setAnchors(PointF a,PointF b){this.a=a;this.b=b;invalidate();}
-        private void mark(Canvas c,PointF p){
-            if(p==null)return;
-            paint.setStyle(Paint.Style.FILL);paint.setColor(Color.rgb(237,71,54));
-            Path flag=new Path();
-            float x=p.x,y=p.y;
-            flag.moveTo(x,y-42);flag.lineTo(x+24,y-34);flag.lineTo(x,y-23);flag.close();
-            c.drawPath(flag,paint);
-            paint.setColor(Color.WHITE);paint.setStrokeWidth(3);
-            c.drawLine(x,y,x,y-42,paint);
-            c.drawCircle(x,y,6,paint);
+        void setPoints(List<PointF> p,float[] segments,boolean isClosed){
+            current=p;lengths=segments;closedLine=isClosed;invalidate();
+        }
+        private void drawEdge(Canvas canvas,PointF u,PointF v,boolean closing){
+            if(u==null||v==null)return;
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(px(6));paint.setColor(Color.BLACK);
+            canvas.drawLine(u.x,u.y,v.x,v.y,paint);
+            paint.setStrokeWidth(px(3));paint.setColor(closing?Color.CYAN:Color.YELLOW);
+            canvas.drawLine(u.x,u.y,v.x,v.y,paint);
+            paint.setStyle(Paint.Style.FILL);
         }
         @Override protected void onDraw(Canvas c){
             super.onDraw(c);
-            float cx=getWidth()/2f,cy=getHeight()/2f,dp=getResources().getDisplayMetrics().density;
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(3*dp);
+            float cx=getWidth()/2f,cy=getHeight()/2f;
+            paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(px(3));
             paint.setColor(ready?Color.rgb(25,213,150):Color.rgb(255,194,50));
-            c.drawCircle(cx,cy,17*dp,paint);
-            c.drawLine(cx-8*dp,cy,cx+8*dp,cy,paint);
-            c.drawLine(cx,cy-8*dp,cx,cy+8*dp,paint);
-            paint.setStyle(Paint.Style.FILL);
-            if(a!=null&&b!=null){
-                paint.setStrokeWidth(7*dp);paint.setColor(Color.BLACK);c.drawLine(a.x,a.y,b.x,b.y,paint);
-                paint.setStrokeWidth(4*dp);paint.setColor(Color.YELLOW);c.drawLine(a.x,a.y,b.x,b.y,paint);
+            c.drawCircle(cx,cy,px(17),paint);
+            c.drawLine(cx-px(8),cy,cx+px(8),cy,paint);
+            c.drawLine(cx,cy-px(8),cx,cy+px(8),paint);
+            for(int i=1;i<current.size();i++){
+                PointF a=current.get(i-1),b=current.get(i);
+                drawEdge(c,a,b,false);
+                if(a!=null&&b!=null&&i-1<lengths.length){
+                    paint.setTextSize(px(12));paint.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+                    String txt=DistanceMath.format(lengths[i-1]);
+                    float xx=(a.x+b.x)/2f,yy=(a.y+b.y)/2f-px(7);
+                    paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(px(3));
+                    paint.setColor(Color.BLACK);c.drawText(txt,xx,yy,paint);
+                    paint.setStyle(Paint.Style.FILL);paint.setColor(Color.WHITE);
+                    c.drawText(txt,xx,yy,paint);
+                }
             }
-            mark(c,a);mark(c,b);
+            if(closedLine&&current.size()>=3)
+                drawEdge(c,current.get(current.size()-1),current.get(0),true);
+            for(int i=0;i<current.size();i++){
+                PointF p=current.get(i);if(p==null)continue;
+                paint.setStyle(Paint.Style.FILL);
+                paint.setColor(Color.rgb(237,71,54));
+                c.drawCircle(p.x,p.y,px(6),paint);
+                paint.setColor(Color.WHITE);
+                paint.setTextSize(px(15));paint.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+                paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(px(3));
+                paint.setColor(Color.BLACK);c.drawText(""+(char)('A'+i),p.x+px(8),p.y-px(8),paint);
+                paint.setStyle(Paint.Style.FILL);paint.setColor(Color.WHITE);
+                c.drawText(""+(char)('A'+i),p.x+px(8),p.y-px(8),paint);
+            }
         }
     }
+
 }
+

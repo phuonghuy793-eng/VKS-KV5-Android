@@ -3,11 +3,11 @@ android {
     namespace 'vn.vks.khuvuc5.armeter'
     compileSdk 35
     defaultConfig {
-        applicationId 'vn.vks.khuvuc5.armeter.v4'
+        applicationId 'vn.vks.khuvuc5.armeter.v5'
         minSdk 26
         targetSdk 34
-        versionCode 4
-        versionName '4.0-multi-object'
+        versionCode 5
+        versionName '5.0-multipoint'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17

@@ -1,10 +1,14 @@
-# Thước đo AR – VKS V4 · Đa vật thể
+# Thước đo AR – VKS V5: nhiều điểm
 
-Dùng ARCore native. Thay đổi lớn: không khóa điểm A/B trên cùng một mặt phẳng như V3.
+Bản nâng cấp từ V4 dành cho đo liên tiếp A–B–C–D, không yêu cầu mọi điểm ở cùng một mặt phẳng.
 
-- Ưu tiên điểm chiều sâu để chọn trên đồ vật không phẳng; sau đó mặt phẳng; sau đó điểm đặc trưng.
-- Khi AR chưa nhận diện 3D vẫn đặt mốc tạm Instant Placement. **Không hiển thị số đo cho đến khi cả hai mốc có dữ liệu theo dõi đầy đủ**, vì khoảng cách tạm 1 mét chỉ là giả định.
-- Đo độ dài thẳng theo không gian 3D, không phải đường cong trên bề mặt; chỉ là kết quả tham khảo.
-- Khi nhắm vào bề mặt kính, nước, vật sáng bóng, vật trơn hoặc thiếu sáng, phép đo có thể sai hay chưa xác định được.
+- **Thêm điểm** bằng cách chạm camera hoặc bấm THÊM ĐIỂM ngay tâm ngắm.
+- **LÙI 1 ĐIỂM** xóa mốc cuối; **XÓA HẾT / ĐO MỚI** bắt đầu lại.
+- **KHÉP VÙNG** khi có từ 3 mốc trở lên. Xem chu vi và diện tích cho vùng đơn giản, gần đồng phẳng; nếu không đồng phẳng, diện tích hiển thị "Chưa xác định".
+- Đo tối đa 24 mốc; hiển thị nhãn A-X và độ dài từng đoạn ngay trên camera, tổng chiều dài/chu vi bên dưới.
+- Không đưa ra số đo khi ARCore còn mốc tạm hoặc điểm mất tracking. Cảnh báo khi kích thước dao động và khi depth hit gần chỗ đổi độ sâu; cách này không loại bỏ hết sai số.
+- Độ chính xác phụ thuộc khoảng cách, ánh sáng, texture, chuyển động điện thoại và chất lượng Depth API.
 
-Build: workflow `Build VKS AR Meter APK` trên nhánh `feature/ar-meter-v4-multi-object`; dùng GitHub Actions, Java 17, Gradle 8.9, Android SDK 35.
+**Chú ý**: Chỉ đo tham khảo, không dùng làm số liệu chứng cứ hoặc đo đạc chính thức. Nên đối chiếu với thước thật cho vật, vùng cần độ chính xác.
+
+Biên dịch: GitHub Actions workflow **Build VKS AR V5 APK** nhánh `feature/ar-meter-v5-multipoint`.

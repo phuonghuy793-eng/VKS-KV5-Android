@@ -1,8 +1,10 @@
-name: Build VKS AR Meter APK
+name: Build VKS AR V5 APK
 on:
   push:
-    branches: [feature/ar-meter-v4-multi-object]
-    paths: ["android-ar-meter/**", ".github/workflows/vks-ar-apk.yml"]
+    branches: [feature/ar-meter-v5-multipoint]
+    paths:
+      - 'android-ar-meter/**'
+      - '.github/workflows/vks-ar-apk.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,14 +22,13 @@ jobs:
         shell: bash
         run: |
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -1)"
-          echo "Using $SDKMANAGER"
           test -x "$SDKMANAGER"
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Compile new native ARCore APK
+      - name: Compile multipoint AR APK
         run: gradle -p android-ar-meter :app:assembleDebug --no-daemon --stacktrace
       - name: Verify APK exists
         run: |
@@ -35,7 +36,7 @@ jobs:
           unzip -t android-ar-meter/app/build/outputs/apk/debug/app-debug.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: VKS-AR-V4-APK
+          name: VKS-AR-V5-MULTIPOINT-APK
           path: android-ar-meter/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
