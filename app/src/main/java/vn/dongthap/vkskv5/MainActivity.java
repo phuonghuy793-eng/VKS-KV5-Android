@@ -21,6 +21,11 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebResourceError;
+import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+import vn.vks.khuvuc5.armeter.ArMeasureActivity;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -71,12 +76,18 @@ public class MainActivity extends Activity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
+                if (launchARFromLink(uri)) return true;
                 if ("file".equalsIgnoreCase(uri.getScheme())) return false;
                 if ("http".equalsIgnoreCase(uri.getScheme()) || "https".equalsIgnoreCase(uri.getScheme())) {
                     openExternal(uri);
                     return true;
                 }
                 return false;
+            }
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                if (HOME.equals(url)) injectARHomeTile(view);
             }
         });
 
@@ -131,6 +142,34 @@ public class MainActivity extends Activity {
             }
             filePathCallback.onReceiveValue(results);
             filePathCallback = null;
+        }
+    }
+
+    // A private app-only URL starts native ARCore without an exposed JavaScript bridge.
+    // The WebView never opens untrusted web pages internally.
+    private boolean launchARFromLink(Uri uri) {
+        if (uri != null && "vksar".equalsIgnoreCase(uri.getScheme())
+                && "open".equalsIgnoreCase(uri.getHost())) {
+            try {
+                startActivity(new Intent(this, ArMeasureActivity.class));
+            } catch (Exception e) {
+                Toast.makeText(this, "Không mở được thước đo AR: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private void injectARHomeTile(WebView page) {
+        try (InputStream in = getAssets().open("ar_entry.js");
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            byte[] buf = new byte[4096];
+            int n;
+            while ((n = in.read(buf)) != -1) out.write(buf, 0, n);
+            page.evaluateJavascript(new String(out.toByteArray(), StandardCharsets.UTF_8), null);
+        } catch (Exception e) {
+            Toast.makeText(this, "Lỗi nạp tiện ích thước đo AR.", Toast.LENGTH_SHORT).show();
         }
     }
 
