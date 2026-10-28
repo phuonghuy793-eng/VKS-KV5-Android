@@ -12,6 +12,15 @@ android {
         targetSdk 35
         versionCode 6
         versionName '2.2.3'
+        manifestPlaceholders = [appLabel: 'VKSKV5-ĐT']
+    }
+    // Debug builds use a different package so test installs never require removing users' existing App VKS.
+    buildTypes {
+        debug {
+            applicationIdSuffix '.artest'
+            versionNameSuffix '-test'
+            manifestPlaceholders = [appLabel: 'VKS AR Thử nghiệm']
+        }
     }
 }
 dependencies {
