@@ -80,6 +80,18 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
     private int frames=0;
     private boolean hitReady=false;
     private String statusText="";
+    // Confirm 3D hits across consecutive frames, rather than trusting a single noisy depth sample.
+    private static final int CONFIRM_FRAMES=5;
+    private static final int MAX_CONFIRM_FRAMES=22;
+    private PlacementRequest placing; // GL thread only
+    private static final class PlacementRequest {
+        final PointF screen;
+        Pose previous;
+        int stableFrames=0;
+        int frames=0;
+        int rejectedDepthFrames=0;
+        PlacementRequest(PointF screen){this.screen=screen;}
+    }
 
     private static FloatBuffer floats(float[] arr) {
         FloatBuffer b=ByteBuffer.allocateDirect(arr.length*4).order(ByteOrder.nativeOrder()).asFloatBuffer();
@@ -139,6 +151,7 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
         });
         undo.setOnClickListener(v->display.queueEvent(()->{
             pendingTap.set(null);
+            placing=null;
             if(!points.isEmpty()){
                 MeasurePoint p=points.remove(points.size()-1);
                 p.anchor.detach();
@@ -165,6 +178,7 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
         }));
         clear.setOnClickListener(v->display.queueEvent(()->{
             pendingTap.set(null);
+            placing=null;
             for(MeasurePoint p:points)p.anchor.detach();
             points.clear();closed=false;lastMetric=Float.NaN;movementAlertFrames=0;
             runOnUiThread(()->{
@@ -266,11 +280,16 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
             if(cam.getTrackingState()!=TrackingState.TRACKING){
                 inform("Camera đang mất định vị. Hướng vào vùng có họa tiết và di chuyển chậm.");
                 pendingTap.set(null);
+                placing=null;
                 if(frames++%12==0)runOnUiThread(()->layer.setReady(false));
                 return;
             }
             PointF tap=pendingTap.getAndSet(null);
-            if(tap!=null)place(f,tap);
+            if(tap!=null){
+                placing=new PlacementRequest(tap);
+                inform("Đang kiểm tra độ ổn định 3D. Giữ điện thoại yên một chút...");
+            }
+            if(placing!=null)confirmPlacement(f);
             if(frames++%7==0){
                 boolean ready=hit(f,width/2f,height/2f)!=null;
                 if(ready!=hitReady){
@@ -345,39 +364,71 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
         }
         return matches<2 || disagrees>=2;
     }
-    private void place(Frame frame,PointF location){
+    /** Check five consecutive hit poses; unstable depth edges are rejected, not merely warned about. */
+    private void confirmPlacement(Frame frame){
+        PlacementRequest request=placing;
+        if(request==null)return;
         if(closed){
+            placing=null;
             inform("Vùng đã khép. Chọn XÓA HẾT để đo mới hoặc LÙI 1 ĐIỂM để sửa.");
             return;
         }
         if(points.size()>=MAX_POINTS){
+            placing=null;
             inform("Đã đủ 24 điểm. Dùng KHÉP VÙNG hoặc XÓA HẾT.");
             return;
         }
-        HitResult h=hit(frame,location.x,location.y);
+        request.frames++;
+        HitResult h=hit(frame,request.screen.x,request.screen.y);
         boolean estimate=false;
         if(h==null){
-            for(HitResult candidate:frame.hitTestInstantPlacement(location.x,location.y,1.0f)){
+            // Preserve instant placement when no detected plane/depth is available.
+            // Its measurement remains provisional until ARCore reports FULL_TRACKING.
+            for(HitResult candidate:frame.hitTestInstantPlacement(request.screen.x,request.screen.y,1.0f)){
                 if(candidate.getTrackable() instanceof InstantPlacementPoint){
                     h=candidate;estimate=true;break;
                 }
             }
         }
-        if(h==null){
-            inform("Chưa bắt được điểm AR; thử di chuyển nhẹ hoặc chọn chỗ có chi tiết.");
-            return;
+        if(h!=null && !noisyDepth(frame,request.screen,h)){
+            Pose current=h.getHitPose();
+            // World-space pose must remain nearly fixed during this short capture.
+            float allowed=Math.max(0.035f,Math.min(0.08f,h.getDistance()*0.025f));
+            if(request.previous!=null && distance(request.previous,current)<=allowed)
+                request.stableFrames++;
+            else request.stableFrames=1;
+            request.previous=current;
+            if(request.stableFrames>=CONFIRM_FRAMES){
+                placing=null;
+                addConfirmedPoint(h,estimate);
+                return;
+            }
+        }else{
+            if(h!=null)request.rejectedDepthFrames++;
+            request.previous=null;
+            request.stableFrames=0;
         }
-        boolean noisy=noisyDepth(frame,location,h);
+        if(request.frames>=MAX_CONFIRM_FRAMES){
+            placing=null;
+            inform(request.rejectedDepthFrames>3 ?
+                "Độ sâu ở điểm này bị nhiễu. Hãy chấm lại xa mép vật thể và giữ máy ổn định." :
+                "Điểm 3D chưa ổn định. Di chuyển camera chậm, tăng ánh sáng rồi thử lại.");
+        }
+    }
+    private void addConfirmedPoint(HitResult h,boolean estimate){
         Trackable trackable=h.getTrackable();
+        // Feature-point hits and instant placement are less certain than plane/depth hits.
+        boolean approximate=trackable instanceof Point || estimate || provisional(trackable);
         Anchor anchor=h.createAnchor();
-        points.add(new MeasurePoint(anchor,trackable,noisy));
+        points.add(new MeasurePoint(anchor,trackable,approximate));
         int n=points.size();
         lastMetric=Float.NaN;movementAlertFrames=0;
         String label=String.valueOf((char)('A'+n-1));
-        if(noisy) inform("Điểm "+label+" nằm gần vùng đổi độ sâu; số đo có thể lệch. Dùng LÙI 1 ĐIỂM nếu cần.");
-        else if(estimate||provisional(trackable))
+        if(estimate||provisional(trackable))
             inform("Đã đặt điểm "+label+" tạm: chờ AR xác định độ sâu thực.");
-        else inform("Đã đặt điểm "+label+". Chạm để thêm điểm tiếp theo.");
+        else if(approximate)
+            inform("Đã đặt điểm "+label+" theo điểm đặc trưng; hãy đối chiếu số đo.");
+        else inform("Đã xác nhận điểm "+label+" ổn định. Chạm để thêm điểm tiếp theo.");
     }
     private static float distance(Pose a,Pose b){
         float dx=a.tx()-b.tx(),dy=a.ty()-b.ty(),dz=a.tz()-b.tz();
@@ -475,7 +526,7 @@ public class ArMeasureActivity extends Activity implements GLSurfaceView.Rendere
                     (uncertainNow||unstable?" • ⚠ Kiểm tra lại sai số":" • Kết quả AR tham khảo"));
             }else if(n>1){
                 instruction.setText(n+" điểm • "+(uncertainNow||unstable?
-                    "⚠ Độ sâu thay đổi, nên đo lại điểm nghi ngờ":
+                    "⚠ Có điểm ước lượng hoặc AR dao động; nên kiểm tra lại":
                     !completeNow?"Có mốc tạm / mất định vị":
                     "Thêm điểm hoặc khép vùng (từ 3 điểm)"));
             }else instruction.setText("Đã đặt "+n+" điểm. Chạm để thêm điểm kế tiếp.");
