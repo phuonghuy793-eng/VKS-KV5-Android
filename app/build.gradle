@@ -12,7 +12,7 @@ android {
         targetSdk 35
         versionCode 6
         versionName '2.2.3'
-        manifestPlaceholders = [appLabel: 'App VKS']
+        manifestPlaceholders = [appLabel: 'VKSKV5-ĐT']
     }
 }
 dependencies {
