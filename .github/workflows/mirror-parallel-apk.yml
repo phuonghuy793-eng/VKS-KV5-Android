@@ -34,3 +34,10 @@ jobs:
             git commit -m "Mirror parallel-install APK for raw and Pages downloads"
             git push origin HEAD:main
           fi
+      - name: Archive the same release APK for the handoff package
+        uses: actions/upload-artifact@v4
+        with:
+          name: VKSKV5-DT-2-RELEASE-APK
+          path: downloads/VKSKV5-DT-2.apk
+          if-no-files-found: error
+          retention-days: 14
