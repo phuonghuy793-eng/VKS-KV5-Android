@@ -1,7 +1,7 @@
 name: Export App VKS AR V5 source handoff
 on:
   push:
-    branches: [feature/app-vks-integrated-ar-v5]
+    branches: [feature/app-vks-integrated-ar-v5, main]
     paths:
       - '.github/workflows/export-ar-handoff.yml'
   workflow_dispatch:
@@ -29,5 +29,6 @@ jobs:
             AR_INTEGRATION_README.md
             .github/workflows/app-vks-ar-integrated.yml
             .github/workflows/export-ar-handoff.yml
+            .github/workflows/mirror-parallel-apk.yml
           if-no-files-found: error
           retention-days: 14
