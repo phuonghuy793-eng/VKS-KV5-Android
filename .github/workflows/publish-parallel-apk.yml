@@ -1,0 +1,49 @@
+name: Publish VKSKV5-DT parallel-install APK
+on:
+  push:
+    branches:
+      - feature/vkskv5-dt-parallel-install
+    paths:
+      - ".github/workflows/publish-parallel-apk.yml"
+      - "app/**"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Prepare Android SDK
+        shell: bash
+        run: |
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -1)"
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Build parallel-install APK
+        run: gradle :app:assembleDebug --no-daemon --stacktrace
+      - name: Verify and rename APK
+        run: |
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          unzip -t app/build/outputs/apk/debug/app-debug.apk
+          cp app/build/outputs/apk/debug/app-debug.apk VKSKV5-DT-2.apk
+          sha256sum VKSKV5-DT-2.apk
+      - name: Publish public GitHub release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "vkskv5-dt-parallel-20261029" \
+            VKSKV5-DT-2.apk \
+            --target "$GITHUB_SHA" \
+            --title "VKSKV5-ĐT (2) - Cài song song" \
+            --notes "Bản VKSKV5-ĐT (2) cài song song với VKSKV5-ĐT bản chính. Mã ứng dụng riêng vn.dongthap.vkskv5.parallel; giữ nguyên 12 tiện ích và thước đo AR đã chọn. Dữ liệu hai bản độc lập. Đây là APK ký debug; không phải bản phát hành khóa ký sản xuất." \
+            --latest=false
