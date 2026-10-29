@@ -14,6 +14,13 @@ android {
         versionName '2.2.3'
         manifestPlaceholders = [appLabel: 'VKSKV5-ĐT']
     }
+    // Parallel-install package only on this isolated branch. The main app remains unchanged.
+    buildTypes {
+        debug {
+            applicationIdSuffix '.parallel'
+            manifestPlaceholders = [appLabel: 'VKSKV5-ĐT (2)']
+        }
+    }
 }
 dependencies {
     implementation 'com.google.ar:core:1.56.0'
