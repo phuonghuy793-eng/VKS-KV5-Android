@@ -1,0 +1,36 @@
+name: Mirror parallel APK for direct download
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/mirror-parallel-apk.yml"
+permissions:
+  contents: write
+jobs:
+  mirror-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Download verified VKSKV5-DT-2 release APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p downloads
+          gh release download vkskv5-dt-parallel-20261029 \
+            -p VKSKV5-DT-2.apk -D downloads --clobber
+          test -s downloads/VKSKV5-DT-2.apk
+          echo "f7b5af984d5f7eca435ce1468fa7c4640ff9815163c03e76d9f4df8c63a4a797  downloads/VKSKV5-DT-2.apk" | sha256sum -c -
+      - name: Commit APK to public downloads directory
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add downloads/VKSKV5-DT-2.apk
+          if git diff --cached --quiet; then
+            echo "Already mirrored"
+          else
+            git commit -m "Mirror parallel-install APK for raw and Pages downloads"
+            git push origin HEAD:main
+          fi
