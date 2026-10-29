@@ -1,7 +1,7 @@
 name: Build App VKS with Native AR V5
 on:
   push:
-    branches: [feature/app-vks-integrated-ar-v5, main]
+    branches: [feature/app-vks-integrated-ar-v5, main, feature/vkskv5-dt-parallel-install]
     paths:
       - "app/**"
       - "gradle.properties"
