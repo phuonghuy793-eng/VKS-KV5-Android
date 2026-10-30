@@ -22,7 +22,7 @@ jobs:
           gh release download vkskv5-dt-parallel-20261029 \
             -p VKSKV5-DT-2.apk -D downloads --clobber
           test -s downloads/VKSKV5-DT-2.apk
-          echo "f7b5af984d5f7eca435ce1468fa7c4640ff9815163c03e76d9f4df8c63a4a797  downloads/VKSKV5-DT-2.apk" | sha256sum -c -
+          echo "70152670b8599c5619ceaa331cda96d8e68a5cc431ab4f64d3acd025ff655c39  downloads/VKSKV5-DT-2.apk" | sha256sum -c -
       - name: Commit APK to public downloads directory
         run: |
           git config user.name "github-actions[bot]"
