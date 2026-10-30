@@ -17,13 +17,18 @@
   card.id="vks-ar-tool";
   card.setAttribute("role","button");
   card.setAttribute("tabindex","0");
-  card.setAttribute("aria-label","Mở thước đo AR bằng camera trên Android");
+  card.setAttribute("aria-label","Mở Thước đo AR hoặc đo từ ảnh");
   card.innerHTML='<div class="ico" aria-hidden="true">📏</div>'
    +'<div style="min-width:0;flex:1"><b>Thước đo AR</b>'
    +'<small>Đo nhiều điểm, chiều dài, chu vi, diện tích bằng camera</small></div>'
    +'<div class="arrow" aria-hidden="true">›</div>';
   function launch(){
-    window.location.href="vksar://open";
+    // Android APK: open native ARCore 3D measurement. Website: open browser AR / photo ruler.
+    if(location.protocol==="file:" && location.href.indexOf("android_asset")!==-1){
+      window.location.href="vksar://open";
+    }else{
+      window.location.href="web-ar.html";
+    }
   }
   card.addEventListener("click",launch);
   card.addEventListener("keydown",function(e){
