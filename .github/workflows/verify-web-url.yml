@@ -4,6 +4,9 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/verify-web-url.yml"
+      - "index.html"
+      - "ar_entry.js"
+      - "web-ar.html"
   workflow_dispatch:
 permissions:
   contents: read
@@ -19,18 +22,27 @@ jobs:
           main_url="https://phuonghuy793-eng.github.io/VKS-KV5-Android/"
           fallback="https://phuonghuy793-eng.github.io/VKS-KV5-Android/index.html"
           download="https://phuonghuy793-eng.github.io/VKS-KV5-Android/downloads/VKSKV5-DT-2.apk"
+          ar_js="https://phuonghuy793-eng.github.io/VKS-KV5-Android/ar_entry.js"
+          ar_page="https://phuonghuy793-eng.github.io/VKS-KV5-Android/web-ar.html"
           for i in $(seq 1 12); do
             echo "Attempt $i"
             home_code=$(curl -L -sS -o /tmp/pages_home.html -w '%{http_code}' --max-time 18 "$main_url" || true)
             direct_code=$(curl -L -sS -o /tmp/pages_index.html -w '%{http_code}' --max-time 18 "$fallback" || true)
             apk_code=$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time 25 -r 0-1 "$download" || true)
-            echo "HTTP home=$home_code direct=$direct_code apk=$apk_code"
-            if [ "$home_code" = "200" ] && [ "$direct_code" = "200" ] && { [ "$apk_code" = "200" ] || [ "$apk_code" = "206" ]; }; then
-              if grep -q 'home-app-download' /tmp/pages_home.html; then
-                echo "PASS: LIVE WEB APP AND APK LINK VERIFIED"
+            js_code=$(curl -L -sS -o /tmp/ar_entry.js -w '%{http_code}' --max-time 18 "$ar_js" || true)
+            ar_code=$(curl -L -sS -o /tmp/web-ar.html -w '%{http_code}' --max-time 18 "$ar_page" || true)
+            echo "HTTP home=$home_code direct=$direct_code apk=$apk_code js=$js_code ar=$ar_code"
+            if [ "$home_code" = "200" ] && [ "$direct_code" = "200" ] && [ "$js_code" = "200" ] && [ "$ar_code" = "200" ] && { [ "$apk_code" = "200" ] || [ "$apk_code" = "206" ]; }; then
+              if grep -q 'home-app-download' /tmp/pages_home.html &&
+                 grep -q '<script src="ar_entry.js"></script>' /tmp/pages_home.html &&
+                 grep -q 'vks-ar-tool' /tmp/ar_entry.js &&
+                 grep -q 'web-ar.html' /tmp/ar_entry.js &&
+                 grep -q 'navigator.xr' /tmp/web-ar.html &&
+                 grep -q 'photoFile' /tmp/web-ar.html; then
+                echo "PASS: LIVE HOME, THUOC DO AR, WEBXR, PHOTO MEASUREMENT AND APK VERIFIED"
                 exit 0
               fi
-              echo "Home page missing expected download tile."
+              echo "One or more essential AR links or resources missing."
             fi
             sleep 15
           done
