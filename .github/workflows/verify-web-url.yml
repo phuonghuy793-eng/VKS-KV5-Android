@@ -1,0 +1,38 @@
+name: Verify public VKSKV5-DT web URL
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/verify-web-url.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-pages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Probe actual public GitHub Pages URLs
+        shell: bash
+        run: |
+          set -uo pipefail
+          main_url="https://phuonghuy793-eng.github.io/VKS-KV5-Android/"
+          fallback="https://phuonghuy793-eng.github.io/VKS-KV5-Android/index.html"
+          download="https://phuonghuy793-eng.github.io/VKS-KV5-Android/downloads/VKSKV5-DT-2.apk"
+          for i in $(seq 1 12); do
+            echo "Attempt $i"
+            home_code=$(curl -L -sS -o /tmp/pages_home.html -w '%{http_code}' --max-time 18 "$main_url" || true)
+            direct_code=$(curl -L -sS -o /tmp/pages_index.html -w '%{http_code}' --max-time 18 "$fallback" || true)
+            apk_code=$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time 25 -r 0-1 "$download" || true)
+            echo "HTTP home=$home_code direct=$direct_code apk=$apk_code"
+            if [ "$home_code" = "200" ] && [ "$direct_code" = "200" ] && { [ "$apk_code" = "200" ] || [ "$apk_code" = "206" ]; }; then
+              if grep -q 'home-app-download' /tmp/pages_home.html; then
+                echo "PASS: LIVE WEB APP AND APK LINK VERIFIED"
+                exit 0
+              fi
+              echo "Home page missing expected download tile."
+            fi
+            sleep 15
+          done
+          echo "FAIL: GitHub Pages URL not publicly available after 12 checks."
+          exit 1
