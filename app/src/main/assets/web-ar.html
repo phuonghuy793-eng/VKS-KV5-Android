@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thước đo AR - VKSKV5-ĐT</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#edf5fb;color:#193c5b;font:15px Arial,sans-serif}
+main{width:min(100%,720px);margin:auto;padding:16px}.panel{background:white;border-radius:17px;padding:15px;margin:13px 0;box-shadow:0 3px 15px #23456715}
+h1{font-size:22px;margin:17px 0 8px}p{line-height:1.5}small,.note{color:#526a7d;line-height:1.5}
+button,.back{border:0;border-radius:11px;background:#1669ab;color:white;padding:12px;font-weight:bold;cursor:pointer}
+.back{display:inline-block;text-decoration:none;padding:10px}.secondary{background:#e6f0fa;color:#17436c}
+.row{display:flex;gap:8px;margin:12px 0}.row button{flex:1}.hidden{display:none!important}
+.status{background:#edf6ff;padding:12px;border-radius:10px;color:#184f7a;line-height:1.5}
+.readout{font-size:23px;color:#124a77;font-weight:800;margin:13px 0}
+label{display:block;margin:14px 0 7px;font-weight:bold}
+input{width:100%;font-size:16px;border:1px solid #cbdce8;border-radius:10px;padding:12px;background:white}
+#photoCanvas{width:100%;height:auto;display:block;cursor:crosshair;touch-action:manipulation}
+#photoArea{background:#172c3a;border-radius:12px;overflow:hidden;min-height:175px}
+#arStage{height:65vh;background:#152c3b;position:relative;border-radius:12px;overflow:hidden}
+#arStage canvas{position:absolute;inset:0;width:100%;height:100%}
+#arOverlay{position:absolute;inset:0;z-index:2;pointer-events:none}
+#arOverlay .cross{position:absolute;top:50%;left:50%;width:20px;height:20px;border:2px solid #ffd344;border-radius:50%;transform:translate(-50%,-50%)}
+#arOverlay .txt{position:absolute;top:12px;left:12px;right:12px;color:#fff;background:#122b41ac;padding:10px;border-radius:9px}
+#arOverlay .actions{pointer-events:auto;position:absolute;bottom:14px;left:10px;right:10px;display:flex;gap:6px}
+#arOverlay .actions button{flex:1;font-size:12px;padding:12px 4px}
+#arSegments,#photoSegments{font-size:14px;line-height:1.7}
+</style></head><body><main>
+<a class="back" href="index.html">← Trang chủ</a><h1>📏 Thước đo AR</h1>
+<p class="note">Đo nhiều điểm, chiều dài, chu vi. AR 3D cần Chrome Android hỗ trợ WebXR. Trên trình duyệt khác có thể đo trên ảnh bằng vật tham chiếu.</p>
+<div class="row"><button id="tabAr">Camera AR (3D)</button><button id="tabPhoto" class="secondary">Đo trên ảnh (2D)</button></div>
+<section id="arPanel" class="panel">
+ <div id="xrStatus" class="status">Kiểm tra khả năng hỗ trợ AR của trình duyệt…</div>
+ <div class="row"><button id="startAr" disabled>Bắt đầu camera AR</button></div>
+ <div id="arStage" class="hidden">
+  <div id="arOverlay"><div class="cross"></div><div class="txt" id="arMark">Di chuyển máy chậm để dò điểm 3D</div>
+   <div class="actions"><button id="arAdd">Thêm điểm</button><button id="arUndo" class="secondary">Lùi điểm</button><button id="arClose" class="secondary">Khép vùng</button></div></div>
+ </div>
+ <div class="readout" id="arReadout">Chưa có điểm</div><div id="arSegments"></div>
+ <div class="row"><button class="secondary" id="arClear">Xóa hết</button><button class="secondary" id="arStop">Thoát AR</button></div>
+ <p class="note">Khoảng cách AR là ước lượng. Đo lại và đối chiếu khi cần độ chính xác cao.</p>
+</section>
+<section id="photoPanel" class="panel hidden">
+ <div class="status">Đo 2D trên một bề mặt, có kích thước vật chuẩn. Ảnh đơn không thể tự xác định độ sâu 3D.</div>
+ <label>Ảnh cần đo / chụp từ camera</label><input id="photoFile" type="file" accept="image/*" capture="environment">
+ <label>Chiều dài đoạn tham chiếu (mét)</label><input type="number" id="refMeters" min=".001" step="any" placeholder="Ví dụ: 4 (đường rộng 4m)">
+ <p id="photoStatus">Chọn ảnh, nhập chiều dài rồi chấm 2 đầu đoạn tham chiếu.</p>
+ <div id="photoArea"><canvas id="photoCanvas"></canvas></div>
+ <div class="readout" id="photoReadout">Chưa có phép đo</div><div id="photoSegments"></div>
+ <div class="row"><button class="secondary" id="photoUndo">Lùi điểm</button><button class="secondary" id="photoClose">Khép vùng</button><button class="secondary" id="photoClear">Xóa điểm</button></div>
+ <p class="note">Hai chấm đầu (R1, R2) là đoạn chuẩn. Sau đó chấm A, B, C… trên cùng một mặt phẳng để đo; không dùng đo khoảng cách trước-sau từ một ảnh.</p>
+</section>
+</main>
+<script type="module">
+const el=id=>document.getElementById(id);
+const d3=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z),d2=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const fmt=m=>m<1?Math.round(m*100)+" cm":m.toLocaleString("vi-VN",{maximumFractionDigits:2})+" m";
+let xrSession=null,renderer=null,scene=null,reticle=null,hitSource=null,ready=false,T=null;
+let pts=[],objects=[],closed=false;
+let picture=null,ref=[],ppts=[],pclosed=false;
+function mode(m){
+ el("arPanel").classList.toggle("hidden",m!=="ar");
+ el("photoPanel").classList.toggle("hidden",m!=="photo");
+ el("tabAr").classList.toggle("secondary",m!=="ar");
+ el("tabPhoto").classList.toggle("secondary",m!=="photo");
+}
+el("tabAr").onclick=()=>mode("ar");
+el("tabPhoto").onclick=()=>mode("photo");
+async function check(){
+ if(!isSecureContext||!navigator.xr){el("xrStatus").textContent="WebXR AR không khả dụng trong trình duyệt này. Hãy dùng Đo trên ảnh hoặc APK VKSKV5-ĐT.";return}
+ try{if(await navigator.xr.isSessionSupported("immersive-ar")){el("xrStatus").textContent="Thiết bị có WebXR AR. Bấm Bắt đầu camera AR.";el("startAr").disabled=false}
+ else el("xrStatus").textContent="Thiết bị chưa hỗ trợ WebXR immersive-ar. Chọn Đo trên ảnh hoặc dùng APK Android."}
+ catch(e){el("xrStatus").textContent="Không xác minh được AR: "+e.message}
+}
+check();
+function drawAR(){
+ if(!scene||!T)return;
+ objects.forEach(o=>{scene.remove(o);o.geometry.dispose();o.material.dispose()});objects=[];
+ pts.forEach(p=>{const m=new T.Mesh(new T.SphereGeometry(.015,12,8),new T.MeshBasicMaterial({color:0xed503b}));m.position.set(p.x,p.y,p.z);scene.add(m);objects.push(m)});
+ if(pts.length>1){const seq=closed?pts.concat([pts[0]]):pts;
+ const line=new T.Line(new T.BufferGeometry().setFromPoints(seq.map(p=>new T.Vector3(p.x,p.y,p.z))),new T.LineBasicMaterial({color:0xffcc4a}));scene.add(line);objects.push(line)}
+ let total=0,segments=[];
+ for(let i=1;i<pts.length;i++){let x=d3(pts[i-1],pts[i]);total+=x;segments.push(String.fromCharCode(64+i)+"–"+String.fromCharCode(65+i)+": "+fmt(x))}
+ if(closed&&pts.length>2){let x=d3(pts[pts.length-1],pts[0]);total+=x;segments.push("Khép: "+fmt(x))}
+ el("arReadout").textContent=pts.length<2?pts.length+" điểm":(closed?"Chu vi ":"Tổng chiều dài ")+fmt(total);
+ el("arSegments").textContent=segments.join(" • ");
+}
+function addAR(){
+ if(!xrSession||!ready||!reticle.visible){el("arMark").textContent="Chưa có điểm 3D. Lia camera rồi thử lại.";return}
+ if(closed||pts.length>=24){el("arMark").textContent="Đã khép vùng / đủ 24 điểm. Lùi điểm hoặc xóa để đo mới.";return}
+ const p=reticle.position;pts.push({x:p.x,y:p.y,z:p.z});el("arMark").textContent="Đã lưu điểm "+String.fromCharCode(64+pts.length);drawAR();
+}
+el("arAdd").onclick=addAR;
+el("arUndo").onclick=()=>{pts.pop();closed=false;drawAR()};
+el("arClear").onclick=()=>{pts=[];closed=false;drawAR()};
+el("arClose").onclick=()=>{if(pts.length<3){el("arMark").textContent="Cần từ 3 điểm để khép vùng.";return}closed=true;drawAR()};
+el("arStop").onclick=()=>xrSession?.end();
+el("startAr").onclick=async()=>{
+ el("startAr").disabled=true;
+ try{
+  T=await import("https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js");
+  const stage=el("arStage");stage.classList.remove("hidden");
+  renderer=new T.WebGLRenderer({alpha:true,antialias:true});
+  renderer.xr.enabled=true;renderer.xr.setReferenceSpaceType("local");
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(stage.clientWidth,stage.clientHeight);
+  stage.insertBefore(renderer.domElement,el("arOverlay"));scene=new T.Scene();
+  const camera=new T.PerspectiveCamera();
+  reticle=new T.Mesh(new T.RingGeometry(.025,.035,32),new T.MeshBasicMaterial({color:0x2ddea1,side:T.DoubleSide}));
+  reticle.rotation.x=-Math.PI/2;reticle.matrixAutoUpdate=false;reticle.visible=false;scene.add(reticle);
+  xrSession=await navigator.xr.requestSession("immersive-ar",{requiredFeatures:["hit-test"],optionalFeatures:["dom-overlay"],domOverlay:{root:document.body}});
+  await renderer.xr.setSession(xrSession);
+  const session=xrSession;
+  session.addEventListener("end",()=>{
+   renderer?.setAnimationLoop(null);hitSource?.cancel();hitSource=null;
+   objects.forEach(o=>{scene.remove(o);o.geometry.dispose();o.material.dispose()});objects=[];pts=[];closed=false;
+   renderer?.dispose();renderer?.domElement?.remove();scene=null;reticle=null;renderer=null;xrSession=null;
+   stage.classList.add("hidden");el("startAr").disabled=false;el("xrStatus").textContent="Đã thoát AR.";el("arReadout").textContent="Chưa có điểm";el("arSegments").textContent="";
+  });
+  const viewer=await session.requestReferenceSpace("viewer");
+  hitSource=await session.requestHitTestSource({space:viewer});
+  const controller=renderer.xr.getController(0);controller.addEventListener("select",addAR);scene.add(controller);
+  renderer.setAnimationLoop((_,frame)=>{
+   if(frame){const hits=frame.getHitTestResults(hitSource),pose=hits.length?hits[0].getPose(renderer.xr.getReferenceSpace()):null;
+    ready=!!pose;reticle.visible=ready;
+    if(pose){reticle.matrix.fromArray(pose.transform.matrix);reticle.matrix.decompose(reticle.position,reticle.quaternion,reticle.scale)}}
+   renderer.render(scene,camera);
+  });
+  el("xrStatus").textContent="Camera AR đã bật. Hướng tâm ngắm vào vật rồi bấm Thêm điểm.";
+ }catch(e){
+   el("xrStatus").textContent="Không bật được WebXR AR: "+e.message+". Có thể chọn Đo trên ảnh.";
+   if(xrSession){try{await xrSession.end()}catch(x){}}else{renderer?.dispose();renderer?.domElement?.remove();el("arStage").classList.add("hidden")}
+   el("startAr").disabled=false;
+ }
+};
+const cv=el("photoCanvas"),ctx=cv.getContext("2d");
+el("photoFile").onchange=async e=>{
+ const file=e.target.files[0];if(!file)return;
+ try{const bmp=await createImageBitmap(file);picture?.close?.();picture=bmp;ref=[];ppts=[];pclosed=false;
+  const scale=Math.min(1,1400/Math.max(bmp.width,bmp.height));cv.width=Math.max(1,Math.round(bmp.width*scale));cv.height=Math.max(1,Math.round(bmp.height*scale));drawPhoto()}
+ catch(err){el("photoStatus").textContent="Không mở được ảnh; thử JPG hoặc PNG."}
+};
+el("refMeters").oninput=drawPhoto;
+const unit=()=>{const v=Number(el("refMeters").value);return ref.length===2&&v>0&&d2(ref[0],ref[1])>1?v/d2(ref[0],ref[1]):NaN};
+function drawPhoto(){
+ if(!picture)return;
+ ctx.clearRect(0,0,cv.width,cv.height);ctx.drawImage(picture,0,0,cv.width,cv.height);
+ function dot(p,label,color){ctx.beginPath();ctx.arc(p.x,p.y,7,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle="#fff";ctx.stroke();ctx.fillStyle="#fff";ctx.font="bold 19px Arial";ctx.fillText(label,p.x+9,p.y-9)}
+ if(ref.length===2){ctx.beginPath();ctx.moveTo(ref[0].x,ref[0].y);ctx.lineTo(ref[1].x,ref[1].y);ctx.strokeStyle="#21e2a8";ctx.lineWidth=4;ctx.stroke()}
+ ref.forEach((p,i)=>dot(p,"R"+(i+1),"#16b48e"));
+ if(ppts.length>=2){ctx.beginPath();ctx.moveTo(ppts[0].x,ppts[0].y);ppts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));if(pclosed)ctx.closePath();ctx.strokeStyle="#ffce51";ctx.lineWidth=4;ctx.stroke()}
+ ppts.forEach((p,i)=>dot(p,String.fromCharCode(65+i),"#e7543e"));
+ el("photoStatus").textContent=ref.length<2?"Bước 1: Chấm đủ hai đầu đoạn tham chiếu R1, R2.":"Bước 2: Chấm các điểm A, B, C… trên cùng mặt phẳng.";
+ const k=unit();if(!Number.isFinite(k)){el("photoReadout").textContent="Nhập chiều dài đoạn chuẩn để tính tỷ lệ";el("photoSegments").textContent="";return}
+ let total=0,parts=[];
+ for(let i=1;i<ppts.length;i++){const d=d2(ppts[i-1],ppts[i])*k;total+=d;parts.push(String.fromCharCode(64+i)+"–"+String.fromCharCode(65+i)+": "+fmt(d))}
+ if(pclosed&&ppts.length>2){const d=d2(ppts[ppts.length-1],ppts[0])*k;total+=d;
+  let area=0;for(let i=0;i<ppts.length;i++){const a=ppts[i],b=ppts[(i+1)%ppts.length];area+=a.x*b.y-a.y*b.x}
+  parts.push("Diện tích 2D ≈ "+(Math.abs(area)*k*k/2).toLocaleString("vi-VN",{maximumFractionDigits:2})+" m²")}
+ el("photoReadout").textContent=ppts.length<2?ppts.length+" điểm đo":(pclosed?"Chu vi ":"Tổng ")+fmt(total);
+ el("photoSegments").textContent=parts.join(" • ");
+}
+cv.addEventListener("click",e=>{if(!picture)return;const r=cv.getBoundingClientRect(),p={x:(e.clientX-r.left)*cv.width/r.width,y:(e.clientY-r.top)*cv.height/r.height};
+ if(ref.length<2)ref.push(p);else if(ppts.length<24&&!pclosed)ppts.push(p);drawPhoto()});
+el("photoUndo").onclick=()=>{if(ppts.length)ppts.pop();else ref.pop();pclosed=false;drawPhoto()};
+el("photoClear").onclick=()=>{ref=[];ppts=[];pclosed=false;drawPhoto()};
+el("photoClose").onclick=()=>{if(ppts.length<3){el("photoStatus").textContent="Cần ít nhất 3 điểm để khép vùng.";return}pclosed=true;drawPhoto()};
+</script></body></html>
