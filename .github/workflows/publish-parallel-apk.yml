@@ -41,9 +41,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "vkskv5-dt-parallel-20261029" \
-            VKSKV5-DT-2.apk \
-            --target "$GITHUB_SHA" \
-            --title "VKSKV5-ĐT (2) - Cài song song" \
-            --notes "Bản VKSKV5-ĐT (2) cài song song với VKSKV5-ĐT bản chính. Mã ứng dụng riêng vn.dongthap.vkskv5.parallel; giữ nguyên 12 tiện ích và thước đo AR đã chọn. Dữ liệu hai bản độc lập. Đây là APK ký debug; không phải bản phát hành khóa ký sản xuất." \
-            --latest=false
+          gh release upload "vkskv5-dt-parallel-20261029" VKSKV5-DT-2.apk --clobber
+          gh release edit "vkskv5-dt-parallel-20261029" \
+            --notes "VKSKV5-ĐT (2) cài song song với VKSKV5-ĐT bản chính; giữ nguyên 12 tiện ích và thước đo AR đã chọn. Đã bổ sung link tải APK trực tiếp trên trang chủ index.html ngày 30/10/2026. Dữ liệu hai bản độc lập; APK debug chưa ký phát hành sản xuất."

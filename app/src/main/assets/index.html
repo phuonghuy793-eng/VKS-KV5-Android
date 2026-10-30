@@ -216,6 +216,15 @@ input,select,.calc,.back{min-height:44px}
 #vksAddressClose{border:1px solid #bad9ed;border-radius:12px;background:#fff;color:#18345a;font-weight:700;font-size:15px;padding:11px 16px;cursor:pointer}
 #vksAddressFrame{width:100%;flex:1;min-height:0;display:block;border:0;background:#eef7fb}
 </style>
+<style id="vks-app-download-style">
+#home .home-app-download{margin:20px 0 15px;padding:18px 16px;background:#eef6ff;border:1px solid #cbdff4;border-radius:16px;color:#193a61;text-align:center;box-shadow:0 4px 12px rgba(30,80,135,.06)}
+#home .appdl-heading{font-size:15px;font-weight:850;letter-spacing:.02em}
+#home .home-app-download p{margin:8px 0 13px;font-size:13px;line-height:1.5;color:#46647f}
+#home .appdl-primary{display:block;background:#176bb5;border-radius:12px;padding:12px 10px;font-size:13px;font-weight:800;color:white;text-decoration:none}
+#home .appdl-links{display:flex;justify-content:center;gap:16px;margin:13px 0 7px;flex-wrap:wrap}
+#home .appdl-links a{font-size:12px;color:#185d97;text-decoration:underline}
+#home .home-app-download small{display:block;font-size:11px;line-height:1.45;color:#687d92}
+</style>
 </head>
 <body><main class="app">
 <section id="home">
@@ -238,6 +247,17 @@ input,select,.calc,.back{min-height:44px}
     <div class="tool home-interest" onclick="showInterest()"><div class="ico">💰</div><b>Tính lãi</b><small>Gốc, lãi suất và thời gian</small><div class="arrow">›</div></div>
     <div class="tool home-age" onclick="showAge()"><div class="ico">🪪</div><b>Tính tuổi</b><small>Năm, tháng, ngày</small><div class="arrow">›</div></div>
     <div class="tool home-law" onclick="showLaw()"><div class="ico">🔎</div><b>Tra cứu pháp luật</b><small>Điều luật, văn bản</small><div class="arrow">›</div></div>
+  </div>
+  <!-- Liên kết APK và web, hiển thị ngay tại Trang chủ index.html; không tính là tiện ích thứ 13. -->
+  <div class="home-app-download" aria-label="Liên kết ứng dụng VKSKV5-ĐT">
+    <div class="appdl-heading">📱 ỨNG DỤNG VKSKV5-ĐT</div>
+    <p>Cài trên Android để sử dụng đầy đủ 12 tiện ích, gồm Thước đo AR bằng camera.</p>
+    <a class="appdl-primary" href="https://phuonghuy793-eng.github.io/VKS-KV5-Android/downloads/VKSKV5-DT-2.apk" target="_blank" rel="noopener noreferrer">⬇ Tải APK VKSKV5-ĐT (2) — cài song song</a>
+    <div class="appdl-links">
+      <a href="https://raw.githubusercontent.com/phuonghuy793-eng/VKS-KV5-Android/main/downloads/VKSKV5-DT-2.apk" target="_blank" rel="noopener noreferrer">Tải dự phòng</a>
+      <a href="https://phuonghuy793-eng.github.io/VKS-KV5-Android/" target="_blank" rel="noopener noreferrer">Link ứng dụng web</a>
+    </div>
+    <small>APK (2) cài cùng bản VKSKV5-ĐT gốc, dữ liệu lưu riêng. Không cần gỡ ứng dụng cũ.</small>
   </div>
   <div class="home-footer">Viện kiểm sát nhân dân Khu vực 5 • Đồng Tháp</div>
 </div>
